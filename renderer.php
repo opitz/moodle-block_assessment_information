@@ -25,15 +25,17 @@ defined('MOODLE_INTERNAL') || die();
 
 class block_assessment_information_renderer extends plugin_renderer_base
 {
-	private $coursepage; 
+	private $coursepage;
+	private $modinfo;
 
 	function block_content(&$content, $instanceid, $config, $assessment_information){
 
 		global $COURSE;
 
 		$this->coursepage = $this->page;
+		$this->modinfo = get_fast_modinfo($COURSE);
 
-		$section_wrapper = 'section_wrap';
+		$section_wrapper = 'section-wrap';
 		
 		if ($this->page->user_is_editing()){
             $this->page->requires->js_init_call('M.block_assessment_information.add_handles');
@@ -180,15 +182,14 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 $moveurl = html_writer::link($moveurl, $moveicon);
                 $html .= html_writer::tag('div', $moveurl, array('class' => 'move'));
 			}
-
+			$mod = $this->modinfo->cms[$resource->itemid];
 			$resource_link  = html_writer::link(
 				new moodle_url($resource->url),
-				$resource->name,
-				array('title'=>$resource->name)
+				$mod->get_formatted_name()
 			);
 			$html .= html_writer::tag('li', $resource_link, array(
-				'class'=>$resource->type,
-				'id'=>$resource->id
+				'id'=>$resource->id,
+				'style'=>'background:url('.$mod->get_icon_url().') no-repeat'
 			));
 
 			if($this->coursepage->user_is_editing()){

@@ -1,3 +1,4 @@
+/*block css*/
 #block-region-topiczero .block_assessment_information{
 	width: 100% !important;
 	min-height: 0 !important;
@@ -36,7 +37,10 @@
 	margin-bottom: 10px;
 }
 #block-region-topiczero .block_assessment_information .section-wrap .resource li{
-	margin-bottom: 0 !important;
+  margin-bottom: 0 !important;
+  margin-left: 0 !important;
+  padding: 5px 0 10px 40px !important;
+  list-style: none;
 }
 
 /*editing mode*/
@@ -67,6 +71,9 @@
 .block_assessment_information .section-wrap.editing .resource.hide-link .remove-link {
 	background-image: url('/blocks/assessment_information/images/hide.svg');
 	background-repeat: no-repeat;
+}
+.block_assessment_information #coursebox-1{
+	margin-right: 3% !important;
 }
 /*config page*/
 #fitem_id_config_subheadings_background .option{

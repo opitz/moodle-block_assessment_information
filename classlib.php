@@ -38,7 +38,7 @@ class assessment_information{
 		$this->db = $DB;
 		$this->courseid = $courseid;
 		//preconfigured resources
-		if(empty($this->get_course_resources('assessment'))){
+		if(!$this->topiczero_section_resources()){
 			$preconfigured_resources = new preconfigured_resources($this->courseid,$theme);
 			$preconfigured_resources->create_default_resources();
 		}
@@ -138,7 +138,19 @@ class assessment_information{
 			array(
 				$section,$this->courseid,$visible
 			), 
-			'weight ASC', 'id, type, name, url, section, visible');
+			'weight ASC', 'id, type, name, url, section, visible, mtable, itemid');
+		return $result;
+	}
+
+	public function topiczero_section_resources(){
+		$sectionid = $this->db->get_field('course_sections','id',array(
+			'course' => $this->courseid,
+			'section' => $this->topic_zero_section
+		));
+		$result = $this->db->count_records('course_modules',array(
+			'course' => $this->courseid,
+			'section' => $sectionid
+		));
 		return $result;
 	}
 }
