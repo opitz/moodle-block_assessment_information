@@ -23,12 +23,12 @@
  */
  // No direct script access.
 defined('MOODLE_INTERNAL') || die();
-define('TOPIC_ZERO_SECTION','52');
+defined('TOPIC_ZERO_SECTION') || define('TOPIC_ZERO_SECTION','52');
 
 class assessment_information{
 
 	public $courseid;
-	private $assignment_tables = array('assign','turnitintool', 'turnitintooltwo');
+	private $assignment_tables = array('assign','turnitintool', 'turnitintooltwo', 'quiz', 'workshop', 'lesson');
 	private $assessment_tables = array('page');
 	public $topic_zero_section = TOPIC_ZERO_SECTION;
 	private $db;
@@ -166,62 +166,111 @@ class preconfigured_resources {
 		$this->courseid = $courseid;
 		global $DB;
 		$this->db = $DB;
-		$this->get_theme_resource_settings();
 	}
-
+	/*
+		This function creates the defaults resourses by duplicating the modules in topic_zero_section
+		to the target course i.e. the course which is currently being viewed.
+	*/
 	public function create_default_resources(){
-		global $CFG;
-		$course = $this->db->get_record('course',array('id'=>$this->courseid));
-		require_once($CFG->dirroot.'/course/modlib.php');
-		foreach ($this->resources as $resource=>$instances) {
-			if($module = $this->db->get_record('modules', array('name'=>$resource))){
-				for($i=1; $i <= $instances; $i++){
-					//prepare default objects
-					$data = new StdClass();
-					$data->section = TOPIC_ZERO_SECTION;
-					$data->visible = '1';
-					$data->course = $this->courseid;
-					$data->module = $module->id;
-    				$data->modulename = $module->name;
-    				$data->groupmode = $course->groupmode;
-    				$data->groupingid = $course->defaultgroupingid;
-				    $data->id = '';
-				    $data->instance = '';
-				    $data->coursemodule = '';
-				    $data->grade = 100;
-				    //some dummy stuffs
-    				$data->name = "Preconfigured resource $module->name $i";
-    				$data->introeditor = array(
-    					'text' => 'This is dummy description',
-    					'format' => 1
-    				);
-    				//get defaults
-    				$config = get_config($module->name);
-    				if($config){
-    					foreach ($config as $key => $value) {
-    						$data->$key = $value;
-    					}
-    				}
-    				add_moduleinfo($data,$course);					
-				}
+		$targetcourse = $this->db->get_record('course', array('id' => $this->courseid));
+		$premixcourseconfig = 'pre_mix_course_'.$this->theme;
+		$premixcourseid = get_config('block_assessment_information', $premixcourseconfig);
+		if($premixcourseid){
+			$premixcourse = $this->db->get_record('course', array('id' => $premixcourseid));
+			$premixcoursemodules = get_fast_modinfo($premixcourse);
+			$sectionid = $this->db->get_field('course_sections', 'id', array(
+				'course' => $premixcourseid,
+				'section' => TOPIC_ZERO_SECTION
+			));
+			$premixresources = $this->db->get_records('course_modules', array(
+				'course'=>$premixcourseid,
+				'section'=> $sectionid
+			));
+			foreach ($premixresources as $resource) {
+				$cm = $premixcoursemodules->cms[$resource->id];
+				$newcmid = $this->duplicate_premix_module($targetcourse,$cm);
 			}
 		}
 	}
+	/*
+	This function duplicates the module to the target course specified. The code is taken for 
+	course/lib.php and modified so that the modules can be duplicated across courses
+	*/
+	private function duplicate_premix_module($course, $cm) {
+	    global $CFG, $DB, $USER;
+	    require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
+	    require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
+	    require_once($CFG->libdir . '/filelib.php');
 
-	private function get_theme_resource_settings(){
-		$config = get_config('block_assessment_information');
-		$theme_key = 'resources_'.$this->theme;
-		if($theme_config = $config->$theme_key){
-			$theme_config = str_replace('/s+/', '', $theme_config);
-			$resource_settings = preg_split('/;/', $theme_config);
-			foreach($resource_settings as $resource){
-				if($resource){
-					preg_match('/(\w*)=(\d*)/', $resource, $matches);
-					if($matches && $matches[1] && $matches[2]){
-						$this->resources[trim($matches[1])] = trim($matches[2]);
-					}
-				}
-			}
-		}
+	    $a          = new stdClass();
+	    $a->modtype = get_string('modulename', $cm->modname);
+	    $a->modname = format_string($cm->name);
+
+	    if (!plugin_supports('mod', $cm->modname, FEATURE_BACKUP_MOODLE2)) {
+	        throw new moodle_exception('duplicatenosupport', 'error', '', $a);
+	    }
+
+	    // Backup the activity.
+
+	    $bc = new backup_controller(backup::TYPE_1ACTIVITY, $cm->id, backup::FORMAT_MOODLE,
+	            backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id);
+
+	    $backupid       = $bc->get_backupid();
+	    $backupbasepath = $bc->get_plan()->get_basepath();
+
+	    $bc->execute_plan();
+
+	    $bc->destroy();
+
+	    // Restore the backup immediately.
+
+	    $rc = new restore_controller($backupid, $course->id,
+	            backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id, backup::TARGET_CURRENT_ADDING);
+
+	    $cmcontext = context_module::instance($cm->id);
+	    if (!$rc->execute_precheck()) {
+	        $precheckresults = $rc->get_precheck_results();
+	        if (is_array($precheckresults) && !empty($precheckresults['errors'])) {
+	            if (empty($CFG->keeptempdirectoriesonbackup)) {
+	                fulldelete($backupbasepath);
+	            }
+	        }
+	    }
+
+	    $rc->execute_plan();
+
+	    // Now a bit hacky part follows - we try to get the cmid of the newly
+	    // restored copy of the module.
+	    $newcmid = null;
+	    $tasks = $rc->get_plan()->get_tasks();
+	    foreach ($tasks as $task) {
+	        if (is_subclass_of($task, 'restore_activity_task')) {
+	            if ($task->get_old_contextid() == $cmcontext->id) {
+	                $newcmid = $task->get_moduleid();
+	                break;
+	            }
+	        }
+	    }
+
+	    // Move the new cmid to the topic zero section of the target course
+	    if ($newcmid) {
+	        $info = get_fast_modinfo($course);
+	        $newcm = $info->get_cm($newcmid);
+	        $section = $DB->get_record('course_sections', array('section' => TOPIC_ZERO_SECTION, 'course' => $course->id));
+	        moveto_module($newcm, $section);
+
+	        // Trigger course module created event. We can trigger the event only if we know the newcmid.
+	        $event = \core\event\course_module_created::create_from_cm($newcm);
+	        $event->trigger();
+	    }
+	    rebuild_course_cache($course->id);
+
+	    $rc->destroy();
+
+	    if (empty($CFG->keeptempdirectoriesonbackup)) {
+	        fulldelete($backupbasepath);
+	    }
+
+	    return isset($newcm) ? $newcm : null;
 	}
 }

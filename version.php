@@ -23,6 +23,6 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015040100;
+$plugin->version   = 2015040101;
 $plugin->requires  = 2014110400;
 $plugin->component = 'block_assessment_information';

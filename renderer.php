@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
+defined('TOPIC_ZERO_SECTION') || define('TOPIC_ZERO_SECTION','52');
 
 class block_assessment_information_renderer extends plugin_renderer_base
 {
@@ -36,10 +37,21 @@ class block_assessment_information_renderer extends plugin_renderer_base
 		$this->modinfo = get_fast_modinfo($COURSE);
 
 		$section_wrapper = 'section-wrap';
-		
+
 		if ($this->page->user_is_editing()){
+			//add required javascripts
             $this->page->requires->js_init_call('M.block_assessment_information.add_handles');
-			$section_wrapper = 'section-wrap editing';
+			$this->page->requires->yui_module('moodle-topiczero-modchooser',
+	        'M.block_assessment_information.init_chooser',
+	        	array(
+	        		array(
+	        			'courseid' => $COURSE->id, 
+	        			'closeButtonTitle' => get_string('close', 'editor')
+	        		)
+	        	)
+	        );
+	      	//set section class to editing mode
+	        $section_wrapper = 'section-wrap editing';
 		}
 		//start content
 		$html = '';
@@ -319,10 +331,37 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 $output = html_writer::tag('div', $output, array('class' => 'show addresourcedropdown'));
                 $modchooser = html_writer::tag('div', $modchooser, array('class' => 'hide addresourcemodchooser'));
             }
-            $courserenderer = $this->coursepage->get_renderer('core','course');
+            $courserenderer = $this->page->get_renderer('core','course');
             $output = $courserenderer->course_modchooser($modules, $course) . $modchooser . $output;
         }
 
         return $output;
+    }
+    function premix_resources_settings($courseid){
+    	global $DB, $PAGE;
+    	$html = '';
+    	$html .= html_writer::start_div('premix-resourses-wrap');
+    	$html .= html_writer::tag('h2',get_string('premix_resourses_heading','block_assessment_information'));
+    	if (!$courseid) {
+    		$html .= html_writer::tag('p',get_string('coursenotdefined','block_assessment_information'));
+    	} else {
+    		$course = $DB->get_record('course', array('id'=>$courseid));
+    		course_create_sections_if_missing($course,TOPIC_ZERO_SECTION);
+    		$section = $DB->get_record('course_sections', array('section'=>TOPIC_ZERO_SECTION, 'course'=>$courseid));
+    		$premixresources = $DB->count_records('course_modules',array(
+				'course' => $course->id,
+				'section' => $section->id
+			));
+			if($premixresources){
+				$html .= html_writer::tag('p',get_string('premixresourcesavailable','block_assessment_information',$course->fullname));
+				$courserenderer = $PAGE->get_renderer('core','course');
+				$html .= $courserenderer->course_section_cm_list($course, $section, 0);
+			} else {
+				$html .= html_writer::tag('p',get_string('premixresourcesnotavailable','block_assessment_information',$course->fullname));
+			}
+			$html .= $this->get_activity_chooser_control($course,TOPIC_ZERO_SECTION);
+    	}
+    	$html .= html_writer::end_div();
+    	return $html;
     }
 }

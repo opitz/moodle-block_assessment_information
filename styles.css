@@ -36,7 +36,8 @@
 .block_assessment_information .section-wrap .resource{
 	margin-bottom: 10px;
 }
-#block-region-topiczero .block_assessment_information .section-wrap .resource li{
+#block-region-topiczero .block_assessment_information .section-wrap .resource li,
+.dragging-resource li{
   margin-bottom: 0 !important;
   margin-left: 0 !important;
   padding: 5px 0 10px 40px !important;
@@ -55,20 +56,33 @@
 .block_assessment_information .section-wrap.editing .resource:hover{
 	background-color: #eeeeee;
 }
-.block_assessment_information .section-wrap.editing .resource .move{
+.block_assessment_information .section-wrap.editing .resource .move,
+.dragging-resource .move{
 	cursor:move;
+	display: inline-block;
+    float: left;
+    margin-top: 8px;
+    line-height: 12px;
 }
-.block_assessment_information .section-wrap.editing .resource .remove-link {
+#block-region-topiczero .block_assessment_information .section-wrap.editing .resource li,
+.dragging-resource li{
+  margin-left: 15px !important;
+  width: 65%;
+}
+.block_assessment_information .section-wrap.editing .resource .remove-link,
+.dragging-resource .remove-link{
 	float: right;
 	margin-top: -25px;
 	line-height: 13px;
 	padding-left: 15px;
 }
-.block_assessment_information .section-wrap.editing .resource.show-link .remove-link {
+.block_assessment_information .section-wrap.editing .resource.show-link .remove-link,
+.dragging-resource.show-link .remove-link{
 	background-image: url('/blocks/assessment_information/images/show.svg');
 	background-repeat: no-repeat;
 }
-.block_assessment_information .section-wrap.editing .resource.hide-link .remove-link {
+.block_assessment_information .section-wrap.editing .resource.hide-link .remove-link 
+.dragging-resource.hide-link .remove-link{
 	background-image: url('/blocks/assessment_information/images/hide.svg');
 	background-repeat: no-repeat;
 }
@@ -95,4 +109,10 @@
 }
 #fitem_id_config_subheadings_background .option.transparent.selected{
 	background-image: url('/blocks/assessment_information/images/tick-transparent.png');
+}
+/*category settings page*/
+.premix-resourses-wrap{
+	padding:10px;
+	border: 1px solid #e5e5e5;
+	margin-top: 25px;
 }

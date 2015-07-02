@@ -39,13 +39,13 @@ if ($ADMIN->fulltree) {
     	'',
     	'theme'
     );
-    foreach ($themes as $key => $theme) {
-    	$settings->add( new admin_setting_configtextarea(
-    		'block_assessment_information/resources_'.$key, 
-    		'Default Resources for '.$key,
-    		'Specify the pre configured resource for the theme',
-    		'page=5;',
-    		PARAM_RAW
-    	));
-    }
+    // foreach ($themes as $key => $theme) {
+    // 	$settings->add( new admin_setting_configtextarea(
+    // 		'block_assessment_information/resources_'.$key, 
+    // 		'Default Resources for '.$key,
+    // 		'Specify the pre configured resource for the theme',
+    // 		'page=5;',
+    // 		PARAM_RAW
+    // 	));
+    // }
 }

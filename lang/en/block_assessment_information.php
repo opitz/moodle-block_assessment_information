@@ -41,7 +41,19 @@ $string['configure_subheadings'] = 'Assignment Subheadings';
 $string['config_subheadings_title'] = 'Title';
 $string['config_subheadings_text'] = 'Text';
 $string['config_subheadings_background'] = 'Background Color';
+$string['messages_category_courseid_error'] = 'Course doesnot exist.';
+$string['heading_category_settings'] = 'Premix resources configuration for theme "{$a}"';
+$string['label_courseid'] = 'Course to add premix resources';
+$string['coursenotdefined'] = 'Please select a premix resources cointainer course for this theme first, to setup 
+    			premix activities/resources.';
+$string['premix_resourses_heading'] = 'Available premix resources';
+$string['premixresourcesnotavailable'] = 'There are no premix resources found in the course <i>{$a}</i>';
+$string['premixresourcesavailable'] = '<i>{$a}</i> contains the following premix resources.';
+$string['notatoplevelcategory'] = 'Not a top level category';
 //configuration
 $string['allowedcolorslabel'] = 'Subheadings background color scheme';
 $string['allowedcolorsdesc'] = 'Please enter the allowed colors for subheadings background in HEX code seperated by semicolon(;)';
 $string['defaultallowedcolors'] = '#2647a0;#3d67ce;#edf5ff;#86a5ec';
+//premissions
+$string['assessment_information:addinstance'] = 'Add a new assessment information block';
+$string['assessment_information:managesettings'] = 'Manage category level settings for assessment information block';

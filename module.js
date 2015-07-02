@@ -1,4 +1,5 @@
-M.block_assessment_information = {}
+M.block_assessment_information = M.block_assessment_information || {}
+
 SELECTORS = {
         ACTIVITYCHOOSER : '.block_assessment_information .section-modchooser-text',
         TRIGGERLINK : 'li#section-52 .section-modchooser-link a',
@@ -17,21 +18,11 @@ M.block_assessment_information.add_handles = function(Y) {
     };
 
     YUI().use('node','node-event-simulate',function(Y){
-        //simulate click event in 52
-        if( node = Y.one(SELECTORS.ACTIVITYCHOOSER)){
-            node.on('click', function(e){
-                if(node = Y.one(SELECTORS.TRIGGERLINK)){
-                    node.simulate('click');
-                } else {
-                    alert('There was error loading activity chooser');
-                }
-                e.preventDefault(); 
-            });
-        }
+        
         //remove link
         var removelink = Y.all('.block_assessment_information .section-wrap.editing .remove-link');
         removelink.on('click', function(e){
-            event.preventDefault();
+            e.preventDefault();
             M.block_assessment_information.changelinkstate(e);
         })
     });
@@ -242,3 +233,47 @@ M.block_assessment_information.toggle = function(current,a,b){
     }
     return a;
 }
+
+YUI.add('moodle-topiczero-modchooser', function (Y, NAME) {
+
+    var TOPICZEROMODCHOOSERNMAE = 'topiczero-modchooser';
+
+    var TOPICZEROMODCHOOSER = function() {
+        TOPICZEROMODCHOOSER.superclass.constructor.apply(this, arguments);
+    };
+
+    Y.extend(TOPICZEROMODCHOOSER, M.core.chooserdialogue, {
+        sectionid : null,
+
+        initializer : function() {
+            var dialogue = Y.one('.chooserdialoguebody');
+            var header = Y.one('.choosertitle');
+            var params = {};
+            this.setup_chooser_dialogue(dialogue, header, params);
+            var modchoserlink = Y.one(SELECTORS.ACTIVITYCHOOSER);
+            this.sectionid = 52;
+            console.log(this);
+            modchoserlink.on('click', this.display_chooser, this)
+        },
+        option_selected : function(thisoption) {
+        // Add the sectionid to the URL.
+            this.hiddenRadioValue.setAttrs({
+                name: 'jump',
+                value: thisoption.get('value') + '&section=' + this.sectionid
+            });
+        }
+    },
+    {
+        NAME : TOPICZEROMODCHOOSERNMAE,
+        ATTRS : {
+            maxheight : {
+                value : 800
+            }
+        }
+    });
+    M.block_assessment_information = M.block_assessment_information || {}
+    M.block_assessment_information.init_chooser = function(config) {
+        return new TOPICZEROMODCHOOSER(config);
+    };
+
+}, '@VERSION@', {"requires": ["moodle-core-chooserdialogue", "moodle-course-coursebase"]});
