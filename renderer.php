@@ -181,6 +181,9 @@ class block_assessment_information_renderer extends plugin_renderer_base
 		$html .= html_writer::start_tag('ul', array('class'=>'resource-list',
 			'id'=>$section));
 		foreach ($resources as $resource) {
+			if(!array_key_exists($resource->itemid, $this->modinfo->cms)) {
+				continue;
+			}
 			$visibleclass = $resource->visible ? ' hide-link' : ' show-link';
 			$html .= html_writer::start_div('resource clearfix'.$visibleclass);
 			if($this->coursepage->user_is_editing()){
