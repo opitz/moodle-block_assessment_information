@@ -28,7 +28,7 @@ defined('TOPIC_ZERO_SECTION') || define('TOPIC_ZERO_SECTION','52');
 class assessment_information{
 
 	public $courseid;
-	private $assignment_tables = array('assign','turnitintool', 'turnitintooltwo', 'quiz', 'workshop', 'lesson');
+	private $assignment_tables = array('assign','turnitintool', 'turnitintooltwo', 'quiz', 'workshop', 'lesson', 'kalvidassign');
 	private $assessment_tables = array('page');
 	public $topic_zero_section = TOPIC_ZERO_SECTION;
 	private $db;
