@@ -46,9 +46,10 @@ class block_assessment_information_edit_form extends block_edit_form {
 			'default_assignment_header', 'block_assessment_information'
 		));
 
+		$editor_options = array('noclean'=>true, 'subdirs'=>true, 'maxfiles'=>-1, 'maxbytes'=>0, 'context'=>$PAGE->context);
 		$mform->addElement('editor', 'config_assignment_text',
-			get_string('config_assignment_text','block_assessment_information'));
-		$mform->setType('config_assignment_text', PARAM_TEXT);
+			get_string('config_assignment_text','block_assessment_information'), null, $editor_options);
+		$mform->setType('config_assignment_text', PARAM_RAW);
 
 		$mform->addElement('advcheckbox','config_enable_extra_section', get_string(
 			'config_enable_extra_section', 'block_assessment_information'
@@ -92,7 +93,7 @@ class block_assessment_information_edit_form extends block_edit_form {
 
 		//subheadings text
 		$mform->addElement('editor', 'config_subheadings_text',
-			get_string('config_subheadings_text','block_assessment_information'));
-		$mform->setType('config_subheadings_text', PARAM_TEXT);
+			get_string('config_subheadings_text','block_assessment_information'), null, $editor_options);
+		$mform->setType('config_subheadings_text', PARAM_RAW);
 	}
 }
