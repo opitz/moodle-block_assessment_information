@@ -55,15 +55,23 @@ class block_assessment_information_renderer extends plugin_renderer_base
 		}
 		//start content
 		$html = '';
+		$html .= html_writer::script(
+			"var hide = '".get_string('hide_block_text', 'block_assessment_information')."'
+			var show = '".get_string('show_block_text', 'block_assessment_information')."'
+			function toggle(t){
+				if(t.innerHTML == hide){
+					t.innerHTML = show; document.getElementById('show-content').style.display = 'none';
+				} else {
+					t.innerHTML = hide; document.getElementById('show-content').style.display = 'block';
+				}
+			}"
+		);
 		//block toggle start
 		$html .= html_writer::start_tag('p', array('class'=>'show-content'));
 		$html .= html_writer::link(
-			'javascript:toggleAndChangeText(
-				"'.get_string('show_block_text', 'block_assessment_information').'",
-				"'.get_string('hide_block_text', 'block_assessment_information').'"
-			);',
-			get_string('hide_block_text', 'block_assessment_information').' ▼',
-			array('id'=>'aTag')
+			'',
+			get_string('hide_block_text', 'block_assessment_information'),
+			array('id'=>'aTag', 'onclick'=>'javascript:toggle(this);return false;')
 		);
 		$html .= html_writer::end_tag('p');
 		//block toggle end

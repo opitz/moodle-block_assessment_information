@@ -86,8 +86,8 @@
 	background-image: url('/blocks/assessment_information/images/hide.svg');
 	background-repeat: no-repeat;
 }
-.block_assessment_information #coursebox-1{
-	margin-right: 3% !important;
+body:not(.editing) .block_assessment_information .card-header{
+	display: none;
 }
 /*config page*/
 #fitem_id_config_subheadings_background .option{
@@ -115,4 +115,15 @@
 	padding:10px;
 	border: 1px solid #e5e5e5;
 	margin-top: 25px;
+}
+
+@media (min-width: 576px){
+	.block_assessment_information #coursebox-1{
+		width: 48.5%;
+		float: left;
+	}
+	.block_assessment_information #coursebox-2{
+		width: 48.5%;
+		float: right;
+	}
 }

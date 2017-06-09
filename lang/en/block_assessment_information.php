@@ -26,8 +26,8 @@ defined('MOODLE_INTERNAL') || die();
 //pluginname
 $string['pluginname'] = 'Assessment Information';
 //main block
-$string['show_block_text'] = 'Show Assessment Information';
-$string['hide_block_text'] = 'Hide Assessment Information';
+$string['show_block_text'] = 'Show Assessment Information ▲';
+$string['hide_block_text'] = 'Hide Assessment Information  ▼';
 $string['default_assessment_header'] = 'Assessment Overview';
 $string['default_assignment_header'] = 'Submit Assignments';
 $string['default_extra_section_header'] = 'Extra Section';
