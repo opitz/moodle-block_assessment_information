@@ -4,10 +4,14 @@
 	min-height: 0 !important;
 	margin-bottom: 0;
 }
+.block_assessment_information p.show-content{
+	margin: 0;
+}
 .block_assessment_information #show-content{
 	display: inline-block;
 	width: 100%;
 	min-height: 0 !important;
+	margin-top: 1rem;
 }
 .block_assessment_information .subheadings_text{
 	padding: .8em;

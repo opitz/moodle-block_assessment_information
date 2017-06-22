@@ -55,17 +55,6 @@ class block_assessment_information_renderer extends plugin_renderer_base
 		}
 		//start content
 		$html = '';
-		$html .= html_writer::script(
-			"var hide = '".get_string('hide_block_text', 'block_assessment_information')."'
-			var show = '".get_string('show_block_text', 'block_assessment_information')."'
-			function toggle(t){
-				if(t.innerHTML == hide){
-					t.innerHTML = show; document.getElementById('show-content').style.display = 'none';
-				} else {
-					t.innerHTML = hide; document.getElementById('show-content').style.display = 'block';
-				}
-			}"
-		);
 		//block toggle start
 		$html .= html_writer::start_tag('p', array('class'=>'show-content'));
 		$html .= html_writer::link(
@@ -79,6 +68,50 @@ class block_assessment_information_renderer extends plugin_renderer_base
 		//block content start
 		$html .= html_writer::start_div($section_wrapper, array('id'=>'show-content',
 			'style'=>'min-height:0px'));
+		$html .= html_writer::script(
+			"var hide = '".get_string('hide_block_text', 'block_assessment_information')."'
+			var show = '".get_string('show_block_text', 'block_assessment_information')."'
+			cookieName = 'assessment_information';
+			checkCookie(cookieName);
+			function toggle(t){
+				if(t.innerHTML == hide){
+					t.innerHTML = show; document.getElementById('show-content').style.display = 'none';
+					setCookie(cookieName,'hidden',7);
+				} else {
+					t.innerHTML = hide; document.getElementById('show-content').style.display = 'block';
+					setCookie(cookieName,'shown',7);
+				}
+			}
+			function setCookie(cname, cvalue, exdays) {
+    			var d = new Date();
+    			d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+				var expires = 'expires='+d.toUTCString();
+				document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
+			}
+			function getCookie(cname) {
+				var name = cname + '=';
+				var ca = document.cookie.split(';');
+				for(var i = 0; i < ca.length; i++) {
+					var c = ca[i];
+					while (c.charAt(0) == ' ') {
+						c = c.substring(1);
+					}
+					if (c.indexOf(name) == 0) {
+						return c.substring(name.length, c.length);
+					}
+				}
+				return '';
+			}
+			function checkCookie(cname){
+				var showInfo = getCookie(cname);
+				if(showInfo == 'hidden'){
+					var block = document.getElementsByClassName('block_assessment_information')[0];
+					var link_wrap = block.getElementsByClassName('show-content')[0];
+					link_wrap.getElementsByTagName('a')[0].innerHTML = show;
+					document.getElementById('show-content').style.display = 'none';
+				}
+			}"
+		);
 		
 		//assessment information start
 		$html .= html_writer::start_div(null, array('id'=>'coursebox-1'));
