@@ -26,8 +26,8 @@ defined('MOODLE_INTERNAL') || die();
 //pluginname
 $string['pluginname'] = 'Assessment Information';
 //main block
-$string['show_block_text'] = 'Show Assessment Information ▲';
-$string['hide_block_text'] = 'Hide Assessment Information  ▼';
+$string['show_block_text'] = 'Show Assessment Information';
+$string['hide_block_text'] = 'Hide Assessment Information';
 $string['default_assessment_header'] = 'Assessment Overview';
 $string['default_assignment_header'] = 'Submit Assignments';
 $string['default_extra_section_header'] = 'Extra Section';
@@ -57,3 +57,4 @@ $string['defaultallowedcolors'] = '#2647a0;#3d67ce;#edf5ff;#86a5ec';
 //premissions
 $string['assessment_information:addinstance'] = 'Add a new assessment information block';
 $string['assessment_information:managesettings'] = 'Manage category level settings for assessment information block';
+$string['config_additional_subheading_add_string'] = "Add additional subheading";

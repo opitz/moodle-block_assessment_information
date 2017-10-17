@@ -4,14 +4,10 @@
 	min-height: 0 !important;
 	margin-bottom: 0;
 }
-.block_assessment_information p.show-content{
-	margin: 0;
-}
 .block_assessment_information #show-content{
 	display: inline-block;
 	width: 100%;
 	min-height: 0 !important;
-	margin-top: 1rem;
 }
 .block_assessment_information .subheadings_text{
 	padding: .8em;
@@ -45,7 +41,6 @@
   margin-bottom: 0 !important;
   margin-left: 0 !important;
   padding: 5px 0 10px 40px !important;
-  background-size: auto !important;
   list-style: none;
 }
 
@@ -91,8 +86,8 @@
 	background-image: url('/blocks/assessment_information/images/hide.svg');
 	background-repeat: no-repeat;
 }
-body:not(.editing) .block_assessment_information .card-header{
-	display: none;
+.block_assessment_information #coursebox-1{
+	margin-right: 3% !important;
 }
 /*config page*/
 #fitem_id_config_subheadings_background .option{
@@ -121,14 +116,6 @@ body:not(.editing) .block_assessment_information .card-header{
 	border: 1px solid #e5e5e5;
 	margin-top: 25px;
 }
-
-@media (min-width: 576px){
-	.block_assessment_information #coursebox-1{
-		width: 48.5%;
-		float: left;
-	}
-	.block_assessment_information #coursebox-2{
-		width: 48.5%;
-		float: right;
-	}
+.block_assessment_information #coursebox-2{
+	float:right;
 }

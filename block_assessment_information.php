@@ -29,6 +29,10 @@ class block_assessment_information extends block_base
         $this->title = get_string('pluginname', 'block_assessment_information');
     }
 
+    public function hide_header(){
+        return true;
+    }
+
     public function instance_allow_multiple()
     {
         return false;

@@ -45,7 +45,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 	        'M.block_assessment_information.init_chooser',
 	        	array(
 	        		array(
-	        			'courseid' => $COURSE->id, 
+	        			'courseid' => $COURSE->id,
 	        			'closeButtonTitle' => get_string('close', 'editor')
 	        		)
 	        	)
@@ -58,61 +58,20 @@ class block_assessment_information_renderer extends plugin_renderer_base
 		//block toggle start
 		$html .= html_writer::start_tag('p', array('class'=>'show-content'));
 		$html .= html_writer::link(
-			'',
-			get_string('hide_block_text', 'block_assessment_information'),
-			array('id'=>'aTag', 'onclick'=>'javascript:toggle(this);return false;')
+			'javascript:toggleAndChangeText(
+				"'.get_string('show_block_text', 'block_assessment_information').'",
+				"'.get_string('hide_block_text', 'block_assessment_information').'"
+			);',
+			get_string('hide_block_text', 'block_assessment_information').' ▼',
+			array('id'=>'aTag')
 		);
 		$html .= html_writer::end_tag('p');
 		//block toggle end
-		
+
 		//block content start
 		$html .= html_writer::start_div($section_wrapper, array('id'=>'show-content',
 			'style'=>'min-height:0px'));
-		$html .= html_writer::script(
-			"var hide = '".get_string('hide_block_text', 'block_assessment_information')."'
-			var show = '".get_string('show_block_text', 'block_assessment_information')."'
-			cookieName = 'assessment_information';
-			checkCookie(cookieName);
-			function toggle(t){
-				if(t.innerHTML == hide){
-					t.innerHTML = show; document.getElementById('show-content').style.display = 'none';
-					setCookie(cookieName,'hidden',7);
-				} else {
-					t.innerHTML = hide; document.getElementById('show-content').style.display = 'block';
-					setCookie(cookieName,'shown',7);
-				}
-			}
-			function setCookie(cname, cvalue, exdays) {
-    			var d = new Date();
-    			d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-				var expires = 'expires='+d.toUTCString();
-				document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
-			}
-			function getCookie(cname) {
-				var name = cname + '=';
-				var ca = document.cookie.split(';');
-				for(var i = 0; i < ca.length; i++) {
-					var c = ca[i];
-					while (c.charAt(0) == ' ') {
-						c = c.substring(1);
-					}
-					if (c.indexOf(name) == 0) {
-						return c.substring(name.length, c.length);
-					}
-				}
-				return '';
-			}
-			function checkCookie(cname){
-				var showInfo = getCookie(cname);
-				if(showInfo == 'hidden'){
-					var block = document.getElementsByClassName('block_assessment_information')[0];
-					var link_wrap = block.getElementsByClassName('show-content')[0];
-					link_wrap.getElementsByTagName('a')[0].innerHTML = show;
-					document.getElementById('show-content').style.display = 'none';
-				}
-			}"
-		);
-		
+
 		//assessment information start
 		$html .= html_writer::start_div(null, array('id'=>'coursebox-1'));
 		//header
@@ -154,22 +113,15 @@ class block_assessment_information_renderer extends plugin_renderer_base
 			$resources = $assessment_information->get_course_resources('assignment');
 		}
 		$html .= $this->get_resources_list($resources,'assignment');
-		
+
 		//subheadings start
 		if(isset($config->subheadings_title) && $config->subheadings_title){
-			$html .= $this->get_assignment_subheadings($config);
-			//list subheadings resources
-			if($this->coursepage->user_is_editing()){
-				$resources = $assessment_information->get_course_resources('subheadings',0);
-			} else {
-				$resources = $assessment_information->get_course_resources('subheadings');
-			}
-			$html .= $this->get_resources_list($resources,'subheadings');
+			$html .= $this->get_assignment_subheadings($assessment_information, $this, $config);
 		}
 		//subheadings end
 		$html .= html_writer::end_div();
 		//submit assignments end
-		
+
 		//extra section start
 		if(isset($config->enable_extra_section) && $config->enable_extra_section){
 			$html .= html_writer::start_div('',array('id'=>'coursebox-1'));
@@ -196,29 +148,68 @@ class block_assessment_information_renderer extends plugin_renderer_base
 		//$content->footer = $this->get_add_activities_resources_link();
 	}
 
-	public static function get_assignment_subheadings($config){
+	public static function get_assignment_subheadings($assessment_information,$that,$config){
 		$html = '';
-		if($config->subheadings_background){
-			$html .= html_writer::tag('h3',$config->subheadings_title,array(
-				'class'=>'subheadings_title',
-				'style'=>'background:'.$config->subheadings_background
-			));
-		} else {
-			$html .= html_writer::start_tag('p',array('class'=>'modassignment'));
-			$html .= html_writer::tag('strong',$config->subheadings_title);
-			$html .= html_writer::end_tag('p');
-		}
-		if($config->subheadings_text['text']){
-			$html .= html_writer::tag('p', $config->subheadings_text['text'],
-				array('class'=>'subheadings_text')
-			);
-		}
+		if(!is_array($config->subheadings_title)) {
+            if ($config->subheadings_background) {
+                $html .= html_writer::tag('h3', $config->subheadings_title, array(
+                    'class' => 'subheadings_title',
+                    'style' => 'background:' . $config->subheadings_background
+                ));
+            } else {
+                $html .= html_writer::start_tag('p', array('class' => 'modassignment'));
+                $html .= html_writer::tag('strong', $config->subheadings_title);
+                $html .= html_writer::end_tag('p');
+            }
+            if ($config->subheadings_text['text']) {
+                $html .= html_writer::tag('p', $config->subheadings_text['text'],
+                    array('class' => 'subheadings_text')
+                );
+            }
+            //list subheadings resources
+            if($that->coursepage->user_is_editing()){
+                $resources = $assessment_information->get_course_resources('subheadings',0);
+            } else {
+                $resources = $assessment_information->get_course_resources('subheadings');
+            }
+            $html .= $that->get_resources_list($resources,'subheadings');
+        } else {
+            $totalSubHeadings = sizeof($config->subheadings_title);
+            for ($i = 0; $i<$totalSubHeadings; $i++) {
+                if ($config->subheadings_background[$i]) {
+                    $html .= html_writer::tag('h3', $config->subheadings_title[$i], array(
+                        'class' => 'subheadings_title',
+                        'style' => 'background:' . $config->subheadings_background[$i]
+                    ));
+                } else {
+                    $html .= html_writer::start_tag('p', array('class' => 'modassignment'));
+                    $html .= html_writer::tag('strong', $config->subheadings_title[$i]);
+                    $html .= html_writer::end_tag('p');
+                }
+                if ($config->subheadings_text[$i]['text']) {
+                    $html .= html_writer::tag('p', $config->subheadings_text[$i]['text'],
+                        array('class' => 'subheadings_text')
+                    );
+                }
+                $subheadings='subheadings';
+                if ($i!=0){
+                    $subheadings.='-'.$i;
+                }
+                //list subheadings resources
+                if($that->coursepage->user_is_editing()){
+                    $resources = $assessment_information->get_course_resources($subheadings,0);
+                } else {
+                    $resources = $assessment_information->get_course_resources($subheadings);
+                }
+                $html .= $that->get_resources_list($resources,$subheadings);
+            }
+        }
 		return $html;
 	}
 
 	public function get_resources_list($resources, $section){
 		$html = '';
-		
+
 		$html .= html_writer::start_tag('ul', array('class'=>'resource-list',
 			'id'=>$section));
 		foreach ($resources as $resource) {
@@ -232,7 +223,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                         array('src' => $this->pix_url('t/move')->out(false),
                             'alt' => 'move',
                             'title' => get_string('move')));
-                $moveurl = new moodle_url($this->page->url, array( 
+                $moveurl = new moodle_url($this->page->url, array(
                 	'moveresource' => 1, 'itemid' => $resource->id
                 ));
                 $moveurl = html_writer::link($moveurl, $moveicon);
@@ -257,7 +248,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 						'data-id'=>$resource->id,
 						'data-state'=>$resource->visible
 					)
-				);	
+				);
 			}
 			$html .= html_writer::end_div();
 		}
