@@ -16,13 +16,13 @@
 
 /**
  * Version details.
- *
  * @package    blocks
  * @subpackage assessment_information
+ * @copyright  2015 Queen Mary University of London Shubhendra Doiphode
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015040101;
+$plugin->version   = 2018021200;
 $plugin->requires  = 2014110400;
 $plugin->component = 'block_assessment_information';

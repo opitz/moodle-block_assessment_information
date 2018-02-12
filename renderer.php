@@ -16,9 +16,9 @@
 
 /**
  * Version details.
- *
  * @package    blocks
  * @subpackage assessment_information
+ * @copyright  2015 Queen Mary University of London Shubhendra Doiphode
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
@@ -37,6 +37,12 @@ class block_assessment_information_renderer extends plugin_renderer_base
 		$this->modinfo = get_fast_modinfo($COURSE);
 
 		$section_wrapper = 'section-wrap';
+
+        $this->page->requires->js_init_call('M.block_assessment_information.toggle_block', array(array(
+                "showText" => get_string('show_block_text', 'block_assessment_information')." ▲",
+                "hideText" => get_string('hide_block_text', 'block_assessment_information')." ▼"
+            ))
+        );
 
 		if ($this->page->user_is_editing()){
 			//add required javascripts
@@ -58,10 +64,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 		//block toggle start
 		$html .= html_writer::start_tag('p', array('class'=>'show-content'));
 		$html .= html_writer::link(
-			'javascript:toggleAndChangeText(
-				"'.get_string('show_block_text', 'block_assessment_information').'",
-				"'.get_string('hide_block_text', 'block_assessment_information').'"
-			);',
+			'javascript:void(0)',
 			get_string('hide_block_text', 'block_assessment_information').' ▼',
 			array('id'=>'aTag')
 		);

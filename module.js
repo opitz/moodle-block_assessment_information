@@ -10,6 +10,22 @@ SELECTORS = {
         MOVEIMAGE : '.move a img',
     }
 
+M.block_assessment_information.toggle_block = function(Y, params) {
+    var toggleLink = Y.one("#aTag");
+    var block = Y.one("#show-content");
+    toggleLink.on('click', function(e){
+        e.preventDefault();
+        var currentText = e.target.getHTML();
+        if(e.target.getHTML() == params["hideText"]){
+            e.target.setHTML(params["showText"]);
+            block.hide();
+        } else {
+            e.target.setHTML(params["hideText"]);
+            block.show();
+        }
+    })
+}
+
 M.block_assessment_information.add_handles = function(Y) {
     M.block_assessment_information.Y = Y;
     var MOVEICON = {
@@ -186,7 +202,6 @@ M.block_assessment_information.save = function() {
         context: this,
         on: {
             success: function (id, response) {
-                console.log(response);
             }
         }
     });
@@ -252,7 +267,6 @@ YUI.add('moodle-topiczero-modchooser', function (Y, NAME) {
             this.setup_chooser_dialogue(dialogue, header, params);
             var modchoserlink = Y.one(SELECTORS.ACTIVITYCHOOSER);
             this.sectionid = 52;
-            console.log(this);
             modchoserlink.on('click', this.display_chooser, this)
         },
         option_selected : function(thisoption) {
