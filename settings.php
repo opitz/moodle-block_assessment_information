@@ -37,7 +37,7 @@ if ($ADMIN->fulltree) {
     	'parent = 0 AND theme IS NOT NULL',
     	array(),
     	'',
-    	'theme'
+    	'id,theme'
     );
     // foreach ($themes as $key => $theme) {
     // 	$settings->add( new admin_setting_configtextarea(
