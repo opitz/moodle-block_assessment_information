@@ -223,7 +223,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 			$html .= html_writer::start_div('resource clearfix'.$visibleclass);
 			if($this->coursepage->user_is_editing()){
 				$moveicon = html_writer::empty_tag('img',
-                        array('src' => $this->pix_url('t/move')->out(false),
+                        array('src' => $this->image_url('t/move')->out(false),
                             'alt' => 'move',
                             'title' => get_string('move')));
                 $moveurl = new moodle_url($this->page->url, array(
