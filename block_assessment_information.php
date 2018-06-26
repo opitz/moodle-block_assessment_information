@@ -21,6 +21,8 @@
  * @copyright  2015 Queen Mary University of London Shubhendra Doiphode
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('TOPIC_ZERO_SECTION') || define('TOPIC_ZERO_SECTION','52');
+
 class block_assessment_information extends block_base
 {
 
@@ -37,7 +39,7 @@ class block_assessment_information extends block_base
     {
         return false;
     }
-    
+
     function instance_allow_config() {
         return true;
     }
@@ -53,17 +55,24 @@ class block_assessment_information extends block_base
         return true;
     }
 	/**
-	 * get_content moodle internal function that is used to get the content of a block 
+	 * get_content moodle internal function that is used to get the content of a block
 	 *
 	 */
     public function get_content()
     {
-        global $CFG, $COURSE;
+        global $CFG, $COURSE, $DB;
         require_once($CFG->dirroot . '/blocks/assessment_information/classlib.php');
 
         if($this->content !== NULL) {
             return $this->content;
         }
+
+        $section = $DB->get_record('course_sections', array('section'=>TOPIC_ZERO_SECTION, 'course'=>$COURSE->id));
+        if($section && $section->visible){
+            require_once($CFG->dirroot . '/course/lib.php');
+            course_update_section($section->course, $section, array('visible' => 0));
+        }
+
         $assessment_information = new assessment_information($COURSE->id,$this->page->theme->name);
 
         $this->content = new stdClass();
@@ -71,7 +80,7 @@ class block_assessment_information extends block_base
         $assessmentrenderer = $this->page->get_renderer('block_assessment_information');
         $assessmentrenderer->block_content($this->content, $this->instance->id, $this->config,
             $assessment_information);
-		
+
         return $this->content;
     }
 }
