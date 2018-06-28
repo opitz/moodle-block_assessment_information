@@ -86,7 +86,7 @@ class block_assessment_information extends block_base
         
         rebuild_course_cache($cid);
         
-        remove_dir($CFG->dataroot.'/cache', true);
+        
 	}
         // CODE ADDED TO CHANGE ACTIVITY ADDED IN SECTION-52 TO STEALTH STARTS HERE
 
