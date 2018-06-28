@@ -79,7 +79,7 @@ class block_assessment_information extends block_base
 		// CODE ADDED TO CHANGE ACTIVITY ADDED IN SECTION-52 TO STEALTH STARTS HERE
         $cid = $COURSE->id;
         $sequence = $section->sequence;
-
+	if ($sequence!="") {
         $sql_stealth = "UPDATE {course_modules} SET visible=1, visibleoncoursepage=0 WHERE id in (" . $sequence . ")";
 
         $DB->execute($sql_stealth);
@@ -87,7 +87,7 @@ class block_assessment_information extends block_base
         rebuild_course_cache($cid);
         
         remove_dir($CFG->dataroot.'/cache', true);
-        
+	}
         // CODE ADDED TO CHANGE ACTIVITY ADDED IN SECTION-52 TO STEALTH STARTS HERE
 
         $this->content = new stdClass();
