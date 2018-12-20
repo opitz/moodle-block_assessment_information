@@ -21,7 +21,7 @@
  * @copyright  2015 Queen Mary University of London Shubhendra Doiphode
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+ 
 function xmldb_block_assessment_information_install() {
 	return true;
 }

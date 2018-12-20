@@ -23,6 +23,7 @@
  */
 //deny acess from direct url
 defined('MOODLE_INTERNAL') || die();
+$string['gradeshow'] = 'Grades Visibility';
 //pluginname
 $string['pluginname'] = 'Assessment Information';
 //main block

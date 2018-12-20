@@ -1,5 +1,5 @@
 M.block_assessment_information = M.block_assessment_information || {}
-
+M.course = M.course || {};
 SELECTORS = {
         ACTIVITYCHOOSER : '.block_assessment_information .section-modchooser-text',
         TRIGGERLINK : 'li#section-52 .section-modchooser-link a',
@@ -9,6 +9,12 @@ SELECTORS = {
         MOVELINK : '.move a',
         MOVEIMAGE : '.move a img',
     }
+    YUI.GlobalConfig = {
+        modules: {
+            module1: '../../course/yui/build/moodle-course-dragdrop/moodle-course-dragdrop-debug.js',
+            
+        }
+    };
 
 M.block_assessment_information.toggle_block = function(Y, params) {
     var toggleLink = Y.one("#aTag");
@@ -27,6 +33,7 @@ M.block_assessment_information.toggle_block = function(Y, params) {
 }
 
 M.block_assessment_information.add_handles = function(Y) {
+    
     M.block_assessment_information.Y = Y;
     var MOVEICON = {
         pix: "i/move_2d",
@@ -105,6 +112,7 @@ M.block_assessment_information.add_handles = function(Y) {
             var tar = new Y.DD.Drop({
                 node: v
             });
+            
         });
 
         Y.DD.DDM.on('drag:start', function(e) {
@@ -128,7 +136,9 @@ M.block_assessment_information.add_handles = function(Y) {
                 visibility: '',
                 opacity: '1'
             });
+
             M.block_assessment_information.save(Y);
+            location.reload();
         });
 
         Y.DD.DDM.on('drag:drag', function(e) {
@@ -160,7 +170,9 @@ M.block_assessment_information.add_handles = function(Y) {
                 //Add the node to this list
                 e.drop.get('node').get('parentNode').insertBefore(drag, drop);
                 //Resize this nodes shim, so we can drop on it later.
+                
                 e.drop.sizeShim();
+
             }
         });
 
@@ -172,8 +184,10 @@ M.block_assessment_information.add_handles = function(Y) {
             if (drop.hasClass('resource-list')) {
                 if (!drop.contains(drag)) {
                     drop.appendChild(drag);
+                    
                 }
             }
+
         });
     });
 }
@@ -193,6 +207,7 @@ M.block_assessment_information.save = function() {
             i++;
         });
     });
+
     Y.io(M.cfg.wwwroot+'/blocks/assessment_information/save.php', {
         method: 'POST',
         data: Y.JSON.stringify(sortorder),
@@ -202,6 +217,7 @@ M.block_assessment_information.save = function() {
         context: this,
         on: {
             success: function (id, response) {
+
             }
         }
     });
@@ -249,6 +265,9 @@ M.block_assessment_information.toggle = function(current,a,b){
     return a;
 }
 
+
+
+
 YUI.add('moodle-topiczero-modchooser', function (Y, NAME) {
 
     var TOPICZEROMODCHOOSERNMAE = 'topiczero-modchooser';
@@ -256,18 +275,37 @@ YUI.add('moodle-topiczero-modchooser', function (Y, NAME) {
     var TOPICZEROMODCHOOSER = function() {
         TOPICZEROMODCHOOSER.superclass.constructor.apply(this, arguments);
     };
-
-    Y.extend(TOPICZEROMODCHOOSER, M.core.chooserdialogue, {
+  
+    Y.extend(TOPICZEROMODCHOOSER, M.core.chooserdialogue, { 
         sectionid : null,
-
+        
         initializer : function() {
             var dialogue = Y.one('.chooserdialoguebody');
             var header = Y.one('.choosertitle');
             var params = {};
+          
+           
             this.setup_chooser_dialogue(dialogue, header, params);
             var modchoserlink = Y.one(SELECTORS.ACTIVITYCHOOSER);
-            this.sectionid = 52;
-            modchoserlink.on('click', this.display_chooser, this)
+                // setTimeout(function(){  
+                section52=document.getElementById('section52_frmDB').value;
+                var value = $('#section52_frmDB').val();
+
+                if(section52 == ""  || section52 == null){
+                   
+                    this.sectionid = 52;
+                }
+                else{
+                  
+                 this.sectionid =section52;
+     
+                }
+                
+                
+                modchoserlink.on('click', this.display_chooser, this);
+                // }, 3000);
+                
+                
         },
         option_selected : function(thisoption) {
         // Add the sectionid to the URL.
@@ -285,9 +323,18 @@ YUI.add('moodle-topiczero-modchooser', function (Y, NAME) {
             }
         }
     });
+   
     M.block_assessment_information = M.block_assessment_information || {}
     M.block_assessment_information.init_chooser = function(config) {
-        return new TOPICZEROMODCHOOSER(config);
+         setTimeout(function(){ 
+            console.log('topic zero called');
+
+            var topiczerobj = new TOPICZEROMODCHOOSER(config);
+                // topiczerobj.cancel_listenevents();
+            // return new TOPICZEROMODCHOOSER(config);
+            return topiczerobj;
+         },3000);
+
     };
 
-}, '@VERSION@', {"requires": ["moodle-core-chooserdialogue", "moodle-course-coursebase"]});
+}, '@VERSION@', {"requires": ["moodle-core-chooserdialogue", "moodle-course-coursebase", "moodle-course-dragdrop"]});

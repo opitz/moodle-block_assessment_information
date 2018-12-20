@@ -31,7 +31,67 @@ class block_assessment_information_edit_form extends block_edit_form {
         parent::__construct($actionurl, $block, $page);
     }
     protected function specific_definition($mform) {
-        global $PAGE;
+
+        /*global $PAGE,$DB,$COURSE;
+        $sql="select * from {block_assessment_information} where courseid=".$COURSE->id;
+        $assesments=$DB->get_records_sql($sql);
+        $quizconfig = get_config('assessment_information');
+       
+
+        $mform->addElement('header', 'additionaloptions', get_string(
+            'gradeshow', 'block_assessment_information'
+        ));
+       
+        foreach($assesments as $assessment){
+
+            ## Custom gradevisible
+            $mform->addElement('selectyesno', 'gradevisible_'.$assessment->itemid, $assessment->name,array('id'=>'customgrade_'.$assessment->itemid));
+
+            // $mform->setAdvanced('gradevisible', $assessment->gradevisible);
+            $mform->setDefault('gradevisible_'.$assessment->itemid, $assessment->gradevisible);
+        }
+        ?>
+       
+        
+
+        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+         
+
+        <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> -->
+            <script>
+        $(document).ready(function(){
+           
+            $('[data-toggle="tooltip"]').tooltip();   
+            $('select[name^="gradevisible_"]').each(function(){
+                $(this).addClass('gradeshow');
+            });
+               
+           
+            $('.gradeshow').change(function(){
+               
+                var id=this.id;
+                var option=$("#"+id+" option:selected").val();
+                var cmid=id.split('_')[1];
+                
+                $.ajax({
+                    url:'../blocks/assessment_information/ajax.php',
+                    type:'POST',
+                    data:{'request':'showgrade','cmid':cmid,'option':option},
+                    success:function(data){
+
+
+                    }
+
+                });
+               
+            });
+        });
+        </script>
+        <?php
+        */
+
 
         //configure section titles
         $mform->addElement('header', 'configheader', get_string('blocksettings', 'block'));
@@ -108,6 +168,7 @@ class block_assessment_information_edit_form extends block_edit_form {
         $repeateloptions['config_subheadings']['expanded'] = true;
         $this->repeat_elements($additional_subheadings, $subheadingnos,
             $repeateloptions, 'subheading_repeats', 'option_subheading_add_fields', 1, get_string('config_additional_subheading_add_string', 'block_assessment_information'), false);
+
     }
     /**
      * Handle submitted data
