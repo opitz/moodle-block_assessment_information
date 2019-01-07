@@ -24,12 +24,13 @@
 define('AJAX_SCRIPT', true);
 
 require_once(dirname(__FILE__) . '/../../config.php');
+require_once('../../lib/modinfolib.php');
 require_login();
 
 $id = required_param('id',PARAM_INT);
 $visible = required_param('state',PARAM_INT);
 
-global $DB;
+global $DB,$COURSE;
 
 $resource = new StdClass();
 $resource->id = $id;
@@ -37,4 +38,14 @@ $resource->visible = $visible;
 
 $result = $DB->update_record('block_assessment_information', $resource);
 
-echo 'State succefully changed';
+$sql = 'select itemid from {block_assessment_information} where id ='.$id;
+$result= $DB->get_record_sql($sql);
+if(isset($result) && $result->itemid != ""){
+	$record=  new StdClass();
+	$record->id= $result->itemid; // course module id from block_assessment_information
+	$record->visible = $visible;
+	$record->visibleold = $visible;
+	$update = $DB->update_record('course_modules', $record);
+	 $completioncache = \cache::make('core', 'coursemodinfo')->purge();
+	echo 'State succefully changed';
+}

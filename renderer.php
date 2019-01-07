@@ -495,9 +495,20 @@ class block_assessment_information_renderer extends plugin_renderer_base
                        //functions end
         foreach ($resources as $resource) {
         $cmid=$resource->itemid;//course module id
-        $sql='select deletioninprogress from {course_modules} where id='.$cmid;
+        $sql='select deletioninprogress,visible from {course_modules} where id='.$cmid;
         $deletion=$DB->get_record_sql($sql);
 
+		// check if that activity is hidden from course
+
+        if(isset ($deletion) && $deletion->visible != ""){
+                $resource->visible = $deletion->visible;
+                $record = new StdClass();
+                $record->id = $resource->id;
+                $record->visible = $deletion->visible;
+
+                $result = $DB->update_record('block_assessment_information', $record);
+            }		
+		
         if(isset($deletion) && $deletion->deletioninprogress != 1 ){
                
         $sql_access="select gm.userid,cm.module from {course_modules} cm 
