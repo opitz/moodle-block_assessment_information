@@ -38,7 +38,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
 		$section_wrapper = 'section-wrap';
 
-        $this->page->requires->js_init_call('M.block_assessment_information.toggle_block', array(array(
+	 $this->page->requires->js_init_call('M.block_assessment_information.toggle_block', array(array(
                 "showText" => get_string('show_block_text', 'block_assessment_information')." ▲",
                 "hideText" => get_string('hide_block_text', 'block_assessment_information')." ▼"
             ))
@@ -211,7 +211,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
         }
         return $html;
     }
-    public function renderAssign($instanceid,$currentuserroleid,$cmid,$html){
+		public function renderAssign($instanceid,$currentuserroleid,$cmid,$html){
                     global $DB,$COURSE,$USER,$CFG;
 
                     $sqldue='select duedate from {assign} where course='.$COURSE->id.' and id= '.$instanceid;
@@ -346,7 +346,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                             // $gradeshow=$DB->get_record_sql($sqlgradeshow);
                                             // if($gradeshow->gradevisible == 1){
                                                 
-                                                $sqlgrade='select finalgrade,feedback, hidden from {grade_grades} where userid= '.$USER->id.' and itemid= '.$gradeitemid;
+                                                $sqlgrade='select finalgrade,feedback,hidden from {grade_grades} where userid= '.$USER->id.' and itemid= '.$gradeitemid;
                                                 $grade=$DB->get_record_sql($sqlgrade);
                                                 // $grade=$exec->finalgrade;
                                             // }
@@ -394,7 +394,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                         // $grade=$exec->finalgrade;
                                     // }
 
-                                    $html.='<label class="due-date badge m-1 badge-danger" style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted'.date("d-m-Y H:i",$arrsubmit->timemodified).'</label>';
+                                    $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted'.date("d-m-Y H:i",$arrsubmit->timemodified).'</label>';
 
                                     if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
 
@@ -490,28 +490,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
                        </script>
                           
                        <?php
-            // functions 
-
-                       //functions end
-        foreach ($resources as $resource) {
-        $cmid=$resource->itemid;//course module id
-        $sql='select deletioninprogress,visible from {course_modules} where id='.$cmid;
-        $deletion=$DB->get_record_sql($sql);
-
-		// check if that activity is hidden from course
-
-        if(isset ($deletion) && $deletion->visible != ""){
-                $resource->visible = $deletion->visible;
-                $record = new StdClass();
-                $record->id = $resource->id;
-                $record->visible = $deletion->visible;
-
-                $result = $DB->update_record('block_assessment_information', $record);
-            }		
-		
-        if(isset($deletion) && $deletion->deletioninprogress != 1 ){
-               
-        $sql_access="select gm.userid,cm.module from {course_modules} cm 
+            /*query to handle group visibility*/
+            $sql_access="select gm.userid,cm.module,cm.id from {course_modules} cm 
                     JOIN {modules} mo on mo.id = cm.module and mo.name = 'assign'
                     join {groupings} gp on gp.id = cm.groupingid
                     join {groupings_groups} gg on gg.groupingid = gp.id
@@ -521,20 +501,65 @@ class block_assessment_information_renderer extends plugin_renderer_base
                     join {context} cx on cx.instanceid = cm.course and cx.contextlevel = 50
                     join {context} cx1 on cx1.id = cx.id or (cx1.instanceid = cm.id and cx1.contextlevel = 70)
                     JOIN {role_assignments} ra on ra.contextid = cx1.id and ra.userid = gm.userid
-                    join {role} ro on ro.id = ra.roleid
-                    where cm.id = $cmid";
+                    join {role} ro on ro.id = ra.roleid";
                     $userlist=$DB->get_records_sql($sql_access);
 
-                    $userarr = array();
+                    $arr_users = array();
                     if(isset($userlist)){
                         foreach($userlist as $userid){
                             if(isset($userid->userid)){
-                                $module=$userid->module;
-                                array_push($userarr,$userid->userid);
+                            
+                                array_push($arr_users,$userid);
+                            }
+                        }
+
+                    }
+                   
+                    
+            /*query to handle group visibility ends */
+
+
+
+                       //functions end
+    foreach ($resources as $resource) {
+         $cmid=$resource->itemid;//course module id
+        
+
+        $sql='select deletioninprogress,visible from {course_modules} where id='.$cmid;
+        $deletion=$DB->get_record_sql($sql);
+
+        // check if that activity is hidden from course
+
+            if(isset ($deletion) && $deletion->visible != ""){
+                $resource->visible = $deletion->visible;
+                $record = new StdClass();
+                $record->id = $resource->id;
+                $record->visible = $deletion->visible;
+
+                $result = $DB->update_record('block_assessment_information', $record);
+            }
+
+
+
+
+
+        if(isset($deletion) && $deletion->deletioninprogress != 1 ){
+               
+        
+                    
+                    $userarr = array();
+                    if(count($arr_users) > 0 ){
+                        foreach ($arr_users as $key => $obj) {
+                            # code...
+                            if($obj->id == $cmid){
+                                array_push($userarr,$obj->userid);                               
                             }
                         }
                     }
-
+                    
+                   
+                    
+                   
 
 
             if(!array_key_exists($resource->itemid, $this->modinfo->cms)) {
@@ -560,7 +585,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
             );
 
 
-            if(isset($userlist) && count($userarr) > 0){
+            if(isset($arr_users) && count($userarr) > 0){
                 // echo 'first';
                   if(in_array($USER->id, $userarr)){  
                     $html .= html_writer::tag('li', $resource_link, array(
@@ -570,7 +595,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 }
                
             }
-            else if(isset($userlist) && count($userarr) == 0){
+            else if(isset($arr_users) && count($userarr) == 0){
                 // echo 'second'."<br>";
                     $html .= html_writer::tag('li', $resource_link, array(
                         'id'=>$resource->id,
@@ -603,8 +628,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 // CODE TO GET CURRENT USERS ROLE starts
            
             // $context = context_module::instance($COURSE->id);
+			
 
-           
            $sql_context = "SELECT id FROM {context} where contextlevel=50 and instanceid=".$COURSE->id;
             $context1=$DB->get_record_sql($sql_context);
             
@@ -677,7 +702,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
             // $context = context_module::instance($COURSE->id);
 
              
-           /* $sql_context = "SELECT id FROM {context} where contextlevel=50 and instanceid=".$COURSE->id;
+          /* $sql_context = "SELECT id FROM {context} where contextlevel=50 and instanceid=".$COURSE->id;
             $context1=$DB->get_record_sql($sql_context);
             $currentuserroleid=0;
 
@@ -706,7 +731,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 
 
                 // for assignments//
-            if(isset($userlist) && count($userarr) >0 ){
+            if(isset($arr_users) && count($userarr) >0 ){
                 if(in_array($USER->id, $userarr)){
 
                      $html =$this->renderAssign($instanceid,$currentuserroleid,$cmid,$html);
@@ -714,7 +739,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 }
             } // if count >0
 
-            if(isset($userlist) && count($userarr) == 0 ){
+            if(isset($arr_users) && count($userarr) == 0 ){
 
                $html =$this->renderAssign($instanceid,$currentuserroleid,$cmid,$html);
             } // if count = 0 
@@ -802,7 +827,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                 
 
 
-                                if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
+                                 if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
                                  $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
                                 }
                             }
@@ -840,7 +865,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                  $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;">Submitted '.date('d-m-Y H:i',$arrsubmit->timemodified).'</label>';
 
 
-                               if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
+                                if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
                                  $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
                                 }
                             }
@@ -864,7 +889,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                 // $gradeshow=$DB->get_record_sql($sqlgradeshow);
                                 // if($gradeshow->gradevisible == 1){
                                     
-                                    $sqlgrade='select finalgrade, feedback, hidden from {grade_grades} where userid= '.$USER->id.' and itemid= '.$gradeitemid;
+                                    $sqlgrade='select finalgrade, feedback,hidden from {grade_grades} where userid= '.$USER->id.' and itemid= '.$gradeitemid;
                                     $grade=$DB->get_record_sql($sqlgrade);
                                     // $grade=$exec->finalgrade;
                                     
