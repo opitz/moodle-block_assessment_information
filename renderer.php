@@ -26,19 +26,19 @@ defined('TOPIC_ZERO_SECTION') || define('TOPIC_ZERO_SECTION','52');
 
 class block_assessment_information_renderer extends plugin_renderer_base
 {
-	private $coursepage;
-	private $modinfo;
+    private $coursepage;
+    private $modinfo;
 
-	function block_content(&$content, $instanceid, $config, $assessment_information){
+    function block_content(&$content, $instanceid, $config, $assessment_information){
 
-		global $COURSE;
+        global $COURSE;
 
-		$this->coursepage = $this->page;
-		$this->modinfo = get_fast_modinfo($COURSE);
+        $this->coursepage = $this->page;
+        $this->modinfo = get_fast_modinfo($COURSE);
 
-		$section_wrapper = 'section-wrap';
+        $section_wrapper = 'section-wrap';
 
-	 $this->page->requires->js_init_call('M.block_assessment_information.toggle_block', array(array(
+        $this->page->requires->js_init_call('M.block_assessment_information.toggle_block', array(array(
                 "showText" => get_string('show_block_text', 'block_assessment_information')." ▲",
                 "hideText" => get_string('hide_block_text', 'block_assessment_information')." ▼"
             ))
@@ -211,11 +211,11 @@ class block_assessment_information_renderer extends plugin_renderer_base
         }
         return $html;
     }
-		public function renderAssign($instanceid,$currentuserroleid,$cmid,$html){
+   public function renderAssign($instanceid,$currentuserroleid,$cmid,$html){
                     global $DB,$COURSE,$USER,$CFG;
 
                     $sqldue='select duedate from {assign} where course='.$COURSE->id.' and id= '.$instanceid;
-                     $arrdue=$DB->get_record_sql($sqldue);
+                    $arrdue=$DB->get_record_sql($sqldue);
 
                    $sqlid="select id from {grade_items} where itemmodule='assign' and courseid= ".$COURSE->id." and iteminstance= ".$instanceid;
                     $execid=$DB->get_record_sql($sqlid);
@@ -433,7 +433,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                     return $html;
                    
                 }
-    // ends
+    // ENDS
 
     public function get_resources_list($resources, $section){
        global $COURSE,$DB,$USER,$CFG,$PAGE;
@@ -491,7 +491,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                           
                        <?php
             /*query to handle group visibility*/
-            $sql_access="select gm.userid,cm.module,cm.id from {course_modules} cm 
+            $sql_access="select RAND(2),cm.id,gm.userid,cm.module from {course_modules} cm 
                     JOIN {modules} mo on mo.id = cm.module and mo.name = 'assign'
                     join {groupings} gp on gp.id = cm.groupingid
                     join {groupings_groups} gg on gg.groupingid = gp.id
@@ -503,6 +503,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                     JOIN {role_assignments} ra on ra.contextid = cx1.id and ra.userid = gm.userid
                     join {role} ro on ro.id = ra.roleid";
                     $userlist=$DB->get_records_sql($sql_access);
+                    
 
                     $arr_users = array();
                     if(isset($userlist)){
@@ -628,35 +629,48 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 // CODE TO GET CURRENT USERS ROLE starts
            
             // $context = context_module::instance($COURSE->id);
-			
 
            $sql_context = "SELECT id FROM {context} where contextlevel=50 and instanceid=".$COURSE->id;
             $context1=$DB->get_record_sql($sql_context);
             
             $currentuserroleid=0;
-             //getting roleid for  teacher, editingteacher, course_admin, student,jp_student
-            //Default roleids 
-            //student = 5;
-            //teacher = 4;
-            //
+            $student_roleid = -1;
+            $jp_student_roleid = -1;
+            $course_admin_roleid = -1;
+            $editingteacher_roleid = -1;
+            $teacher_roleid = -1;
+
+
+            //getting roleid for  teacher, editingteacher, course_admin, student,jp_student
             $sql= 'select id from {role} where shortname="student"';
             $exec=$DB->get_record_sql($sql);
+
             $student_roleid=$exec->id;// id=42
-             $sql= 'select id from {role} where shortname="jp_student"';
+            $sql= 'select id from {role} where shortname="jp_student"';
+
             $exec=$DB->get_record_sql($sql);
-            $jp_student_roleid=$exec->id;//id=43
+            if(isset($exec) && $exec->id != ""){
+                $jp_student_roleid=$exec->id;//id=43
+             }
+            
 
             $sql= 'select id from {role} where shortname="course_admin"';
             $exec=$DB->get_record_sql($sql);
+            
             $course_admin_roleid=$exec->id;// id=37
+            
 
             $sql= 'select id from {role} where shortname="editingteacher"';
             $exec=$DB->get_record_sql($sql);
-            $editingteacher_roleid=$exec->id;//id=38
+            if(isset($exec) && $exec->id != ""){
+                $editingteacher_roleid=$exec->id;//id=38
+            }
 
             $sql= 'select id from {role} where shortname="teacher"';
             $exec=$DB->get_record_sql($sql);
-            $teacher_roleid=$exec->id;// id=39
+            if(isset($exec) && $exec->id != ""){
+                $teacher_roleid=$exec->id;// id=39
+            }
 
             // echo $student_roleid. " ".$jp_student_roleid." ".$course_admin_roleid." ".$editingteacher_roleid." ".$teacher_roleid;
 
