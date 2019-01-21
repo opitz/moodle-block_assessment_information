@@ -491,7 +491,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                           
                        <?php
             /*query to handle group visibility*/
-            $sql_access="select RAND(2),cm.id,gm.userid,cm.module from {course_modules} cm 
+            $sql_access="select FLOOR(RAND() * 99999 * ra.userid),cm.id,gm.userid,cm.module from {course_modules} cm 
                     JOIN {modules} mo on mo.id = cm.module and mo.name = 'assign'
                     join {groupings} gp on gp.id = cm.groupingid
                     join {groupings_groups} gg on gg.groupingid = gp.id
@@ -639,7 +639,6 @@ class block_assessment_information_renderer extends plugin_renderer_base
             $course_admin_roleid = -1;
             $editingteacher_roleid = -1;
             $teacher_roleid = -1;
-
 
             //getting roleid for  teacher, editingteacher, course_admin, student,jp_student
             $sql= 'select id from {role} where shortname="student"';
