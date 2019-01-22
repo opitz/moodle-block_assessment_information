@@ -456,7 +456,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                            jQuery(document).ready(function($){
                             
                                 
-                            setInterval(function(){
+                            
                                 var course=<?php echo $COURSE->id ; ?>;
                                 $.ajax({
                                     url: '../blocks/assessment_information/ajax.php',
@@ -484,7 +484,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                     }
 
                                 });
-                             }, 1000);
+                            
                             
                            });
                        </script>
