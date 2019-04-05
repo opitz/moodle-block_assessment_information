@@ -456,7 +456,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                            jQuery(document).ready(function($){
                             
                                 
-                            
+                           
                                 var course=<?php echo $COURSE->id ; ?>;
                                 $.ajax({
                                     url: '../blocks/assessment_information/ajax.php',
@@ -491,7 +491,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                           
                        <?php
             /*query to handle group visibility*/
-            $sql_access="select FLOOR(RAND() * 99999 * ra.userid),cm.id,gm.userid,cm.module from {course_modules} cm 
+            $sql_access="select FLOOR(RAND() * 99999 * ra.userid), cm.id,gm.userid,cm.module from {course_modules} cm 
                     JOIN {modules} mo on mo.id = cm.module and mo.name = 'assign'
                     join {groupings} gp on gp.id = cm.groupingid
                     join {groupings_groups} gg on gg.groupingid = gp.id
@@ -501,10 +501,12 @@ class block_assessment_information_renderer extends plugin_renderer_base
                     join {context} cx on cx.instanceid = cm.course and cx.contextlevel = 50
                     join {context} cx1 on cx1.id = cx.id or (cx1.instanceid = cm.id and cx1.contextlevel = 70)
                     JOIN {role_assignments} ra on ra.contextid = cx1.id and ra.userid = gm.userid
-                    join {role} ro on ro.id = ra.roleid";
+                    join {role} ro on ro.id = ra.roleid where gm.userid = ".$USER->id;
                     $userlist=$DB->get_records_sql($sql_access);
-                    
+                   
 
+                   
+                   
                     $arr_users = array();
                     if(isset($userlist)){
                         foreach($userlist as $userid){
@@ -526,7 +528,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
          $cmid=$resource->itemid;//course module id
         
 
-        $sql='select deletioninprogress,visible from {course_modules} where id='.$cmid;
+        $sql='select *  from {course_modules} where id='.$cmid;
         $deletion=$DB->get_record_sql($sql);
 
         // check if that activity is hidden from course
@@ -558,8 +560,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
                         }
                     }
                     
-                   
-                    
+               
+
                    
 
 
@@ -586,9 +588,10 @@ class block_assessment_information_renderer extends plugin_renderer_base
             );
 
 
-            if(isset($arr_users) && count($userarr) > 0){
+            if( !is_siteadmin() &&  $deletion->groupingid != 0 ){
                 // echo 'first';
-                  if(in_array($USER->id, $userarr)){  
+                
+                  if( count($userarr) > 0  && in_array($USER->id, $userarr)){
                     $html .= html_writer::tag('li', $resource_link, array(
                         'id'=>$resource->id,
                         'style'=>'background:url('.$mod->get_icon_url().') no-repeat'
@@ -596,7 +599,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 }
                
             }
-            else if(isset($arr_users) && count($userarr) == 0){
+            else if(is_siteadmin() || ($deletion->groupingid == 0  && count($userarr) == 0)){
                 // echo 'second'."<br>";
                     $html .= html_writer::tag('li', $resource_link, array(
                         'id'=>$resource->id,
@@ -628,10 +631,11 @@ class block_assessment_information_renderer extends plugin_renderer_base
            
                 // CODE TO GET CURRENT USERS ROLE starts
            
-            // $context = context_module::instance($COURSE->id);
-
-           $sql_context = "SELECT id FROM {context} where contextlevel=50 and instanceid=".$COURSE->id;
-            $context1=$DB->get_record_sql($sql_context);
+            
+            
+     // blocked code as per client between 
+            $sql_context = "SELECT id FROM {context} where contextlevel=50 and instanceid=".$COURSE->id;
+                $context1=$DB->get_record_sql($sql_context);
             
             $currentuserroleid=0;
             $student_roleid = -1;
@@ -640,7 +644,10 @@ class block_assessment_information_renderer extends plugin_renderer_base
             $editingteacher_roleid = -1;
             $teacher_roleid = -1;
 
-            //getting roleid for  teacher, editingteacher, course_admin, student,jp_student
+
+
+
+             //getting roleid for  teacher, editingteacher, course_admin, student,jp_student
             $sql= 'select id from {role} where shortname="student"';
             $exec=$DB->get_record_sql($sql);
 
@@ -664,7 +671,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
             if(isset($exec) && $exec->id != ""){
                 $editingteacher_roleid=$exec->id;//id=38
             }
-
+			
             $sql= 'select id from {role} where shortname="teacher"';
             $exec=$DB->get_record_sql($sql);
             if(isset($exec) && $exec->id != ""){
@@ -672,9 +679,10 @@ class block_assessment_information_renderer extends plugin_renderer_base
             }
 
             // echo $student_roleid. " ".$jp_student_roleid." ".$course_admin_roleid." ".$editingteacher_roleid." ".$teacher_roleid;
+    
 
 
-
+            
             $sqlrole ='select roleid from {role_assignments} where contextid= '. $context1->id.' and userid= '.$USER->id;
             $arrrole=$DB->get_records_sql($sqlrole);
             // under mentioned checks are for a user having dual roles(teacher and student) 
@@ -708,14 +716,12 @@ class block_assessment_information_renderer extends plugin_renderer_base
             // CODE TO GET CURRENT USERS ROLE ends
              $sqltotalusers="select count(*) as count from {role_assignments} where contextid=$context1->id and roleid = $student_roleid";
 
-            
-
             // CODE TO GET CURRENT USERS ROLE starts
             
-            // $context = context_module::instance($COURSE->id);
+            
 
              
-          /* $sql_context = "SELECT id FROM {context} where contextlevel=50 and instanceid=".$COURSE->id;
+         /* $sql_context = "SELECT id FROM {context} where contextlevel=50 and instanceid=".$COURSE->id;
             $context1=$DB->get_record_sql($sql_context);
             $currentuserroleid=0;
 
@@ -727,7 +733,6 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
             $sqltotalusers='select count(*) as count from {role_assignments} where contextid='.$context1->id .' and roleid=5';*/
             // CODE TO GET CURRENT USERS ROLE ends
-            
             
             $arr_totalusers=$DB->get_record_sql($sqltotalusers);
             $total_users=$arr_totalusers->count;
@@ -744,15 +749,15 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 
 
                 // for assignments//
-            if(isset($arr_users) && count($userarr) >0 ){
-                if(in_array($USER->id, $userarr)){
+            if( $deletion->groupingid != 0  ){
+                if( count($userarr) > 0  && in_array($USER->id, $userarr)){
 
                      $html =$this->renderAssign($instanceid,$currentuserroleid,$cmid,$html);
                     
                 }
             } // if count >0
 
-            if(isset($arr_users) && count($userarr) == 0 ){
+            if($deletion->groupingid == 0  && count($userarr) == 0){
 
                $html =$this->renderAssign($instanceid,$currentuserroleid,$cmid,$html);
             } // if count = 0 
