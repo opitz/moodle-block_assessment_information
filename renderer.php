@@ -318,7 +318,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                                     $html.='<label class="due-date badge m-1 "  id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
                                     
-                                     $html.='<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Submitted '.date("d-m-Y H:i",$arrsubmit->timemodified).'</label>';
+                                     $html.='<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
 
                                      if($arrsubmit->timemodified >$arrdue->duedate ){
                                         $late=$arrsubmit->timemodified-$arrdue->duedate;
@@ -349,7 +349,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                                     $html.='<label class="due-date badge m-1 "  id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
 
-                                    $html.='<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Draft Submitted '.date("d-m-Y H:i",$arrsubmit->timemodified).'</label>';
+                                    $html.='<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Draft Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
 
                                     $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
 
@@ -383,7 +383,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                             // }
                                             $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
                                             
-                                             $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted '.date("d-m-Y H:i",$arrsubmit->timemodified).'</label>';
+                                             $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
 
                                             if(($grade->feedback != null || $grade->finalgrade != null) && $grade->hidden != 1){
 
@@ -395,7 +395,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                                         $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
 
-                                        $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;"> Draft Submitted '.date("d-m-Y H:i",$arrsubmit->timemodified).'</label>';
+                                        $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;"> Draft Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
 
                                     }
                                      else{
@@ -425,7 +425,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                         // $grade=$exec->finalgrade;
                                     // }
 
-                                    $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted'.date("d-m-Y H:i",$arrsubmit->timemodified).'</label>';
+                                    $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted'.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
 
                                     if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
 
