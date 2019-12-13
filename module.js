@@ -283,7 +283,13 @@ YUI.add('moodle-topiczero-modchooser', function (Y, NAME) {
             var dialogue = Y.one('.chooserdialoguebody');
             var header = Y.one('.choosertitle');
             var params = {};
-          
+            
+            var nextid = 999;
+            var nextsectionid = document.getElementsByClassName("txt_nextsectionid");
+            if(nextsectionid.length > 0) {
+                console.log("next id : " + nextsectionid[0].value );
+                nextid = nextsectionid[0].value;
+            }
            
             this.setup_chooser_dialogue(dialogue, header, params);
             var modchoserlink = Y.one(SELECTORS.ACTIVITYCHOOSER);
@@ -293,7 +299,8 @@ YUI.add('moodle-topiczero-modchooser', function (Y, NAME) {
 
                 if(section52 == ""  || section52 == null){
                    
-                    this.sectionid = 52;
+                    // this.sectionid = 52;
+                    this.sectionid = nextid;
                 }
                 else{
                   

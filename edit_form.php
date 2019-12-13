@@ -113,10 +113,10 @@ class block_assessment_information_edit_form extends block_edit_form {
         $mform->setDefault('config_assignment_header', get_string(
             'default_assignment_header', 'block_assessment_information'
         ));
-
+        
         $mform->addElement('editor', 'config_assignment_text',
             get_string('config_assignment_text','block_assessment_information'));
-        $mform->setType('config_assignment_text', PARAM_TEXT);
+        $mform->setType('config_assignment_text', PARAM_RAW);
 
         $mform->addElement('advcheckbox','config_enable_extra_section', get_string(
             'config_enable_extra_section', 'block_assessment_information'
@@ -184,6 +184,7 @@ class block_assessment_information_edit_form extends block_edit_form {
         $data = parent::get_data();
         //$data can be null when form is submitted with other buttons than submit like "Add 1 additional teaching session"
         if($this->_form->isSubmitted() && $data != NULL) {
+            
             // Any empty additional subheadings need to be removed
             $subheadings = $data->config_subheadings_title;
 
