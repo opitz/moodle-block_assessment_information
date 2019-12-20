@@ -656,12 +656,23 @@ class block_assessment_information_renderer extends plugin_renderer_base
             );
 
             $course_moduleid = $resource->itemid;
-            $labelmodText = "";
-            $sql_coursemod = "select l.intro from {course_modules} cm LEFT JOIN {label} l ON cm.instance=l.id where cm.id=".$course_moduleid;
-            $coursemodData = $DB->get_records_sql($sql_coursemod);
-            foreach($coursemodData as $cmod){
-                $labelmodText = $cmod->intro;
+
+            if ($resource->mtable=="label") {
+                $sql_fetchinstanceid = "SELECT instance FROM {course_modules} WHERE id=" . $resource->itemid;
+                $arr_fetchinstanceid = $DB->get_record_sql($sql_fetchinstanceid);
+                $labelinstanceid = $arr_fetchinstanceid->instance;
+
+                if ($labelinstanceid>=1) {
+                    $sql_fetchintro = "SELECT intro FROM {label} WHERE id=" . $labelinstanceid;
+
+                    $arr_fetchintro = $DB->get_record_sql($sql_fetchintro);
+                    $labelintro = $arr_fetchintro->intro;
+                    $labelmodText = preg_replace('~<p[^>]*>~', '', $labelintro);
+                }
+            } else {
+                $labelmodText = "";
             }
+
 
             ## Get course access
             $modinfo = get_fast_modinfo($COURSE);
@@ -674,44 +685,76 @@ class block_assessment_information_renderer extends plugin_renderer_base
             $dimmedClass = "";
             if ($conditionalhidden) {
                 $dimmedClass = "dimmedRes";
-                $resource_link = strip_tags($resource_link);
+                if (!is_siteadmin()) {
+                    $resource_link = strip_tags($resource_link);
+                }
             }
                        
             if( !is_siteadmin() &&  $deletion->groupingid != 0 ){
                 // echo 'first';
                     
-                  if( count($userarr) > 0  && in_array($USER->id, $userarr)){
-                    if($labelmodText != ''){
-                        $html .= html_writer::tag('li', $labelmodText, array(
-                            'id'=>$resource->id,
-                            'style'=>'background:url('.$mod->get_icon_url().') no-repeat',
-                            'class' => $dimmedClass
-                        ));
-                    }else{
-                        $html .= html_writer::tag('li', $resource_link, array(
-                            'id'=>$resource->id,
-                            'style'=>'background:url('.$mod->get_icon_url().') no-repeat',
-                            'class' =>$dimmedClass
-                        ));
+                    //==
+                    if($dimmedClass == ''){
+                        if( count($userarr) > 0  && in_array($USER->id, $userarr)){
+                            if($labelmodText != ''){
+                                $html .= html_writer::tag('li', $labelmodText, array(
+                                    'id'=>$resource->id,
+                                    'style'=>'background:url('.$mod->get_icon_url().') no-repeat',
+                                    'class' => $dimmedClass
+                                ));
+                            }else{
+                                $html .= html_writer::tag('li', $resource_link, array(
+                                    'id'=>$resource->id,
+                                    'style'=>'background:url('.$mod->get_icon_url().') no-repeat',
+                                    'class' =>$dimmedClass
+                                ));
+                            }
+                        
+                        }
                     }
-                }
+                    
+                    //==
                
             }
             else if(is_siteadmin() || ($deletion->groupingid == 0  && count($userarr) == 0)){
                 // echo 'second'."<br>";
-                if($labelmodText != ''){    // Label mod
-                    $html .= html_writer::tag('li', $labelmodText, array(
-                        'id'=>$resource->id,
-                        'style'=>'background:url('.$mod->get_icon_url().') no-repeat;',
-                            'class' =>$dimmedClass
-                    ));
-                }else{
-                    $html .= html_writer::tag('li', $resource_link, array(
-                        'id'=>$resource->id,
-                        'style'=>'background:url('.$mod->get_icon_url().') no-repeat;',
-                            'class' =>$dimmedClass
-                    ));
+                //==
+                if(is_siteadmin()){
+                    if($labelmodText != ''){    // Label mod
+                        $html .= html_writer::tag('li', $labelmodText, array(
+                            'id'=>$resource->id,
+                            'style'=>'background:url('.$mod->get_icon_url().') no-repeat;',
+                                'class' =>$dimmedClass
+                        ));
+                    }else{
+
+                        $html .= html_writer::tag('li', $resource_link, array(
+                            'id'=>$resource->id,
+                            'style'=>'background:url('.$mod->get_icon_url().') no-repeat;',
+                                'class' =>$dimmedClass
+                        ));
+
+                    }
+                } else {
+                    if($dimmedClass == '') {
+                        if ($labelmodText != '') {    // Label mod
+                            $html .= html_writer::tag('li', $labelmodText, array(
+                                'id' => $resource->id,
+                                'style' => 'background:url(' . $mod->get_icon_url() . ') no-repeat;',
+                                'class' => $dimmedClass
+                            ));
+                        } else {
+
+                            $html .= html_writer::tag('li', $resource_link, array(
+                                'id' => $resource->id,
+                                'style' => 'background:url(' . $mod->get_icon_url() . ') no-repeat;',
+                                'class' => $dimmedClass
+                            ));
+
+                        }
+                    }
                 }
+                //==
                 
             }
             
