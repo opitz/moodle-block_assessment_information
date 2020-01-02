@@ -242,9 +242,50 @@ class block_assessment_information_renderer extends plugin_renderer_base
         }
         return $html;
     }
+
+    // == 
+    public function checkAssignmentConditions($cmid){
+        global $COURSE;
+
+        ## Get course access
+        $modinfo = get_fast_modinfo($COURSE);
+        $cm = $modinfo->get_cm($cmid);                                                       
+        $isDuedateVisible = true;
+
+        if (empty($cm->uservisible)) {
+            $isDuedateVisible = false;
+         
+        }else{
+            $mod = $this->modinfo->cms[$cmid];
+            $info = new \core_availability\info_module($mod);
+            $conditionalhidden = !$info->is_available_for_all();
+
+            if(is_siteadmin()){
+                if ($conditionalhidden) {
+
+                    $isDuedateVisible = false;
+                }
+            }else{
+                if(!empty($cm->available) && $cm->available == 1){
+                    $isDuedateVisible = true;
+                }else{
+                    $isDuedateVisible = false;
+                }
+            }
+                
+
+        }
+
+
+        return $isDuedateVisible;
+    }
+    // ==
    public function renderAssign($instanceid,$currentuserroleid,$cmid,$html){
                     global $DB,$COURSE,$USER,$CFG;
 
+        // ==
+        $isDuedateVisible = $this->checkAssignmentConditions($cmid);
+        // ==
                     $sqldue='select duedate from {assign} where course='.$COURSE->id.' and id= '.$instanceid;
                     $arrdue=$DB->get_record_sql($sqldue);
 
@@ -292,16 +333,24 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                             // }
                             if($currentuserroleid == 5){
-                               
+
                                 $sqlsubmit='select status,timemodified from {assign_submission} where userid= '.$USER->id.' and assignment= '.$instanceid;
                                 $arrsubmit=$DB->get_record_sql($sqlsubmit);
                                
                                 if( !isset($arrsubmit->status) || $arrsubmit->status == 'new'){
 
+                                    // ==
                                     
-                                     $html.='<label class="due-date badge m-1" data-toggle="tooltip" title ="Overdue" id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+                                   
+                                    if($isDuedateVisible){
 
-                                     $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+
+                                        $html.='<label class="due-date badge m-1 shubh" data-toggle="tooltip" title ="Overdue" id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+
+                                         $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                                    }
+                                    // ==
+                                     
 
 
                                 }
@@ -316,9 +365,14 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                         // $grade=$exec->finalgrade;
                                     // }
 
-                                    $html.='<label class="due-date badge m-1 "  id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+                                    // ==
                                     
-                                     $html.='<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
+                                    if($isDuedateVisible){
+                                        $html.='<label class="due-date badge m-1 "  id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+                                    
+                                        $html.='<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
+                                    }
+                                    // ==
 
                                      if($arrsubmit->timemodified >$arrdue->duedate ){
                                         $late=$arrsubmit->timemodified-$arrdue->duedate;
@@ -334,25 +388,39 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                         if ($hours>0) $timestring = $hours." hour".$mins." min";
                                         if ($days>0) $timestring = $days." day";
 
+                                        // ==
                                         
-
-                                        $html.='<label class="due-date badge m-1 badge-danger" style="border-radius: .25rem;padding:5px;margin-right:5px;">'. $timestring .' Late </label>';
+                                        if($isDuedateVisible){
+                                            $html.='<label class="due-date badge m-1 badge-danger" style="border-radius: .25rem;padding:5px;margin-right:5px;">'. $timestring .' Late </label>';
+                                        }
+                                        // ==
 
                                      }
 
                                     if(($grade->feedback != null || $grade->finalgrade != null) && $grade->hidden != 1 ){
 
-                                     $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
+                                        // ==
+                                      
+                                        if($isDuedateVisible){
+                                            $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
+                                        }
+                                        // ==
+                                     
                                     }
                                 }
                                 else if(isset($arrsubmit->status) && $arrsubmit->status == 'draft'){
 
-                                    $html.='<label class="due-date badge m-1 "  id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+                                    // == 
+                                   
+                                    if($isDuedateVisible){
+                                        $html.='<label class="due-date badge m-1 "  id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
 
-                                    $html.='<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Draft Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
+                                        $html.='<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Draft Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
 
-                                    $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
-
+                                        $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                                    }
+                                    
+                                    // ==
 
                                 }
                             
@@ -381,26 +449,48 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                                 $grade=$DB->get_record_sql($sqlgrade);
                                                 // $grade=$exec->finalgrade;
                                             // }
-                                            $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+
+                                            // ==
+                                           
+                                            if($isDuedateVisible){
+                                                $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
                                             
-                                             $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
+                                                $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
+                                            }
+                                            // ==
 
                                             if(($grade->feedback != null || $grade->finalgrade != null) && $grade->hidden != 1){
 
-                                             $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
+                                                // ==
+                                                if($isDuedateVisible){
+                                                    $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
+                                                }
+                                             
+                                                 // ==
                                             }
 
                                     }
                                     else if(isset($arrsubmit->status) && $arrsubmit->status == 'draft'){
 
-                                        $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+                                        // ==
+                                       
+                                        if($isDuedateVisible){
+                                            $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
 
-                                        $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;"> Draft Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
+                                            $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;"> Draft Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
+                                        }
+                                        
+                                        // ==
 
                                     }
                                      else{
+                                        // ==
+                                       
+                                        if($isDuedateVisible){
                                        $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="
                                             border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+                                        }
+                                        // ==
                                      }
                                         
                                 }
@@ -425,11 +515,18 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                         // $grade=$exec->finalgrade;
                                     // }
 
-                                    $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted'.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
-
+                                    // ==
+                                  
+                                    if($isDuedateVisible){
+                                        $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted'.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
+                                    }
+                                    // ==
                                     if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
-
+                                        // ==
+                                        if($isDuedateVisible){
                                     $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
+                                        }
+                                        // ==
                                      }
 
                                 }
@@ -569,10 +666,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                     JOIN {role_assignments} ra on ra.contextid = cx1.id and ra.userid = gm.userid
                     join {role} ro on ro.id = ra.roleid where gm.userid = ".$USER->id;
                     $userlist=$DB->get_records_sql($sql_access);
-                   
 
-                   
-                   
                     $arr_users = array();
                     if(isset($userlist)){
                         foreach($userlist as $userid){
@@ -583,10 +677,9 @@ class block_assessment_information_renderer extends plugin_renderer_base
                         }
 
                     }
-                   
-                    
-            /*query to handle group visibility ends */
 
+
+            /*query to handle group visibility ends */
 
 
                        //functions end
@@ -610,13 +703,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
             }
 
 
-
-
-
         if(isset($deletion) && $deletion->deletioninprogress != 1 ){
-               
-        
-                    
                     $userarr = array();
                     if(count($arr_users) > 0 ){
                         foreach ($arr_users as $key => $obj) {
@@ -626,10 +713,6 @@ class block_assessment_information_renderer extends plugin_renderer_base
                             }
                         }
                     }
-                    
-               
-
-                   
 
 
             if(!array_key_exists($resource->itemid, $this->modinfo->cms)) {
@@ -678,21 +761,49 @@ class block_assessment_information_renderer extends plugin_renderer_base
             $modinfo = get_fast_modinfo($COURSE);
             $cm = $modinfo->get_cm($course_moduleid);
             // $cm = $modinfo->cms[$course_moduleid];
-
-            $info = new \core_availability\info_module($cm);
-            $conditionalhidden = !$info->is_available_for_all();
-
+          
+          
             $dimmedClass = "";
-            if ($conditionalhidden) {
+            
+
+            if (empty($cm->uservisible)) {
                 $dimmedClass = "dimmedRes";
                 if (!is_siteadmin()) {
                     $resource_link = strip_tags($resource_link);
                 }
+            }else{
+
+                $info = new \core_availability\info_module($mod);
+                $conditionalhidden = !$info->is_available_for_all();
+
+              
+                
+                if(is_siteadmin()){
+                    if ($conditionalhidden) {
+
+                        $dimmedClass = "dimmedRes";
+                        if (!is_siteadmin()) {
+                            $resource_link = strip_tags($resource_link);
+                        }
+                    }
+                }else{
+                    if(!empty($cm->available) && $cm->available == 1){
+                        $dimmedClass = "";
+                    }else{
+                        $dimmedClass = "dimmedRes";
+                        if (!is_siteadmin()) {
+                            $resource_link = strip_tags($resource_link);
+                        }
+                    }
+                }
+                
+
             }
-                       
+
+
             if( !is_siteadmin() &&  $deletion->groupingid != 0 ){
                 // echo 'first';
-                    
+
                     //==
                     if($dimmedClass == ''){
                         if( count($userarr) > 0  && in_array($USER->id, $userarr)){
@@ -712,7 +823,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                         
                         }
                     }
-                    
+
                     //==
                
             }
@@ -965,11 +1076,15 @@ class block_assessment_information_renderer extends plugin_renderer_base
                              $arrsubmit=$DB->get_record_sql($sqlsubmit);
                            
                             if( !isset($arrsubmit->state) || $arrsubmit->state == 'inprogress'){
+                                // ==
                                 
+                                if($isDuedateVisible){
                                 $html.='<label class="due-date badge m-1" data-toggle="tooltip" title ="Overdue" id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
 
-                                $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
-
+                                    $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                                }
+                                // ==
+                                
                             }
                             else if( isset($arrsubmit->state) && $arrsubmit->state == 'finished'){
                                 $grade="";
@@ -984,15 +1099,24 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                                 // }
 
+                                // ==
+                               
+                                if($isDuedateVisible){
                                 $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
                                 
                                  $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;">Submitted '.date('d-m-Y H:i',$arrsubmit->timemodified).'</label>';
-
+                                }
+                                // ==
                                 
 
 
                                  if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
+                                    // ==
+                                  
+                                    if($isDuedateVisible){
                                  $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
+                                    }
+                                    // ==
                                 }
                             }
                         
@@ -1024,17 +1148,30 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                     // $grade=$exec->finalgrade;
                                     
                                 // }
+                                    // ==
+                                  
+                                    if($isDuedateVisible){
                                  $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
                                 
                                  $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;">Submitted '.date('d-m-Y H:i',$arrsubmit->timemodified).'</label>';
-
+                                }
+                                // ==
 
                                 if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
+                                    // ==
+                                    
+                                    if($isDuedateVisible){
                                  $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
+                                    }
                                 }
                             }
                              else{
-                               $html.='<label class="due-date badge m-1" id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+                                // ==
+                                
+                                if($isDuedateVisible){
+                                    $html.='<label class="due-date badge m-1" id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+                                }
+                                // ==
                              }
                             
                         }
@@ -1058,10 +1195,19 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                     // $grade=$exec->finalgrade;
                                     
                                 // }
-                                 $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;">Submitted '.date('d-m-Y H:i',$arrsubmit->timemodified).'</label>';
 
+                                // ==
+                               
+                                if($isDuedateVisible){
+                                 $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;">Submitted '.date('d-m-Y H:i',$arrsubmit->timemodified).'</label>';
+                                }
+                                // ==
                                 if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
+                                    // ==
+                                    if($isDuedateVisible){
                                  $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
+                                    }
+                                    // ==
                                 }
 
                             }
