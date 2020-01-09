@@ -296,7 +296,14 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                     if($arrdue->duedate != 0){
                         $timestamp=$arrdue->duedate;
-                        $date = date('d-m-Y H:i', $timestamp);
+						
+						//Extension due date starts
+                        $sql_dateextn="select extensionduedate from {assign_user_flags} where userid=" . $USER->id . " AND assignment= ".$instanceid;
+                        if ($arr_dateextn=$DB->get_record_sql($sql_dateextn)) {
+                            $timestamp = $arr_dateextn->extensionduedate;
+                        }
+						
+						$date = date('d-m-Y H:i', $timestamp);
                         
                          $currentdate=time();
                          
