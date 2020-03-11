@@ -43,7 +43,7 @@ foreach($courseSectionData as $catsection){
     $nextsection = $catsection->section;
 }
 */
-$nextsection = course_get_format($COURSE)->get_last_section_number()+1;
+$nextsection = course_get_format($COURSE)->get_last_section_number();
 // defined('TOPIC_ZERO_SECTION') || define('TOPIC_ZERO_SECTION','52');
 defined('TOPIC_ZERO_SECTION2') || define('TOPIC_ZERO_SECTION2',$nextsection);
 
@@ -59,9 +59,19 @@ class block_assessment_information extends block_base
 
     protected function check4section() {
         global $COURSE,$DB;
-        // Only add the section if it does not already exist and copy any additional text from the old AI tab into it
+        // Only add the section if the AI block is installed and it does not already exist and copy any additional text from the old AI tab into it
+        $sql = "
+        SELECT * 
+        FROM {block_instances} bi
+        JOIN {context} cx ON cx.id = bi.parentcontextid
+        JOIN {course} c ON c.id = cx.instanceid
+        WHERE cx.contextlevel = 50
+        AND bi.blockname = 'assessment_information'
+        AND c.id = $COURSE->id
+        ";
+        $ai_block = $DB->get_records_sql($sql);
         $ai_section = $this->get_ai_section($COURSE);
-        if (!$ai_section) {
+        if ($ai_block && !$ai_section) {
             // get the text content of the old AI tab
             $fo_content_assessmentinformation = $DB->get_record('course_format_options', array('courseid' => $COURSE->id, 'name' => 'content_assessmentinformation'));
 

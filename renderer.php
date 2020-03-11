@@ -51,7 +51,7 @@ if($nextsection == 999 && $COURSE->id > 1){
 
 }
 */
-$nextsection = course_get_format($COURSE)->get_last_section_number()+1;
+$nextsection = course_get_format($COURSE)->get_last_section_number();
 // defined('TOPIC_ZERO_SECTION') || define('TOPIC_ZERO_SECTION',52);
 defined('TOPIC_ZERO_SECTION1') || define('TOPIC_ZERO_SECTION1',$nextsection);
 defined('DEFAULT_TOPIC_ZERO_SECTION') || define('DEFAULT_TOPIC_ZERO_SECTION',999);

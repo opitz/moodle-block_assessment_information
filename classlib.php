@@ -36,7 +36,7 @@ foreach($courseSectionData as $catsection){
     $nextsection = $catsection->section;
 }
 */
-$nextsection = course_get_format($COURSE)->get_last_section_number()+1;
+$nextsection = course_get_format($COURSE)->get_last_section_number();
 // defined('TOPIC_ZERO_SECTION') || define('TOPIC_ZERO_SECTION','52');
 defined('TOPIC_ZERO_SECTION3') || define('TOPIC_ZERO_SECTION3',$nextsection);
 
