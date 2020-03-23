@@ -216,6 +216,21 @@ class block_assessment_information extends block_base
             course_update_section($section->course, $section, array('visible' => 0));
         }
 */
+
+        // make sure the related section for the block stays hidden
+//        $section = $DB->get_record('course_sections', array('section'=>TOPIC_ZERO_SECTION2, 'course'=>$COURSE->id));
+        $sql_coursesection = "
+            select section
+            from {course_sections}
+            where course = $COURSE->id
+            and (sequence = '666' or sequence like '666,%' or sequence like '%,666,%' or sequence like '%,666')
+        ";
+        $section = $DB->get_record_sql($sql_coursesection);
+        if($section && isset($section->visible) && $section->visible){
+            require_once($CFG->dirroot . '/course/lib.php');
+            course_update_section($section->course, $section, array('visible' => 0));
+        }
+
         $assessment_information = new assessment_information($COURSE->id,$this->page->theme->name);
 
 
