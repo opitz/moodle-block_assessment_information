@@ -43,9 +43,9 @@ foreach($courseSectionData as $catsection){
     $nextsection = $catsection->section;
 }
 */
-$nextsection = course_get_format($COURSE)->get_last_section_number()+1;
+//$nextsection = course_get_format($COURSE)->get_last_section_number()+1;
 // defined('TOPIC_ZERO_SECTION') || define('TOPIC_ZERO_SECTION','52');
-defined('TOPIC_ZERO_SECTION2') || define('TOPIC_ZERO_SECTION2',$nextsection);
+//defined('TOPIC_ZERO_SECTION2') || define('TOPIC_ZERO_SECTION2',$nextsection);
 
 
 class block_assessment_information extends block_base
@@ -208,14 +208,14 @@ class block_assessment_information extends block_base
         if($this->content !== NULL) {
             return $this->content;
         }
-
+/*
         // $section = $DB->get_record('course_sections', array('section'=>TOPIC_ZERO_SECTION, 'course'=>$COURSE->id));
         $section = $DB->get_record('course_sections', array('section'=>TOPIC_ZERO_SECTION2, 'course'=>$COURSE->id));
         if($section && $section->visible){
             require_once($CFG->dirroot . '/course/lib.php');
             course_update_section($section->course, $section, array('visible' => 0));
         }
-
+*/
         $assessment_information = new assessment_information($COURSE->id,$this->page->theme->name);
 
 
