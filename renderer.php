@@ -674,7 +674,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
             rebuild_course_cache($COURSE->id, true);
         }
 
-        
+
 
             ?>
 
@@ -772,7 +772,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
             if(isset ($deletion) && $deletion->visible != ""){
                 $resource->visible = $deletion->visible;
-                $record = new StdClass();
+                $record = (object) new StdClass();
                 $record->id = $resource->id;
                 $record->visible = $deletion->visible;
 
@@ -1104,6 +1104,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
              $sqldue='select timeclose from {quiz} where course='.$COURSE->id.' and id= '.$instanceid;
              $arrdue=$DB->get_record_sql($sqldue);
+
+            $isDuedateVisible = $this->checkAssignmentConditions($cmid);
 
                 $sqlid="select id from {grade_items} where itemmodule='quiz' and courseid= ".$COURSE->id." and iteminstance= ".$instanceid;
                 $execid=$DB->get_record_sql($sqlid);
