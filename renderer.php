@@ -993,7 +993,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
             $sql= 'select id from {role} where shortname="jp_student"';
 
             $exec=$DB->get_record_sql($sql);
-            if(isset($exec) && $exec->id != ""){
+            if(isset($exec->id) && $exec->id != ""){
                 $jp_student_roleid=$exec->id;//id=43
              }
 
@@ -1001,7 +1001,9 @@ class block_assessment_information_renderer extends plugin_renderer_base
             $sql= 'select id from {role} where shortname="course_admin"';
             $exec=$DB->get_record_sql($sql);
 
-            $course_admin_roleid=$exec->id;// id=37
+            if(isset($exec->id) && $exec->id != ""){
+                $course_admin_roleid=$exec->id;// id=37
+            }
 
 
             $sql= 'select id from {role} where shortname="editingteacher"';
