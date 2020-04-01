@@ -84,7 +84,7 @@ class block_assessment_information extends block_base
                 $fo_content_assessmentinformation = $DB->get_record('course_format_options', array('courseid' => $COURSE->id, 'name' => 'content_assessmentinformation'));
 
                 $ai_section_title = get_string('ai_section_title','block_assessment_information');
-                $ai_section = $this->add_invisible_ai_section($COURSE, $ai_section_title, $fo_content_assessmentinformation->value);
+                $ai_section = $this->add_invisible_ai_section($COURSE, $ai_section_title, (isset($fo_content_assessmentinformation->value) ? $fo_content_assessmentinformation->value : ''));
             }
             rebuild_course_cache($COURSE->id, true);
         }
