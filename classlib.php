@@ -36,9 +36,9 @@ foreach($courseSectionData as $catsection){
     $nextsection = $catsection->section;
 }
 */
-$nextsection = course_get_format($COURSE)->get_last_section_number();
+//$nextsection = course_get_format($COURSE)->get_last_section_number();
 // defined('TOPIC_ZERO_SECTION') || define('TOPIC_ZERO_SECTION','52');
-defined('TOPIC_ZERO_SECTION3') || define('TOPIC_ZERO_SECTION3',$nextsection);
+//defined('TOPIC_ZERO_SECTION3') || define('TOPIC_ZERO_SECTION3',$nextsection);
 
 
 
@@ -48,7 +48,7 @@ class assessment_information{
 	private $assignment_tables = array('assign','turnitintool', 'turnitintooltwo', 'quiz', 'workshop', 'lesson', 'kalvidassign');
 	private $assessment_tables = array('page');
 	// public $topic_zero_section = TOPIC_ZERO_SECTION;
-	public $topic_zero_section = TOPIC_ZERO_SECTION3;
+//	public $topic_zero_section = TOPIC_ZERO_SECTION3;
 	private $db;
 
 	function __construct($courseid,$theme){
