@@ -306,11 +306,10 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                         $date = date('d-m-Y H:i', $timestamp);
 
-                         $currentdate=time();
+                        $currentdate=time() + 400*24*60*60;
 
-
+                        
                         if($currentdate>$timestamp){
-
                             // if (is_siteadmin() || $currentuserroleid == 4){
 
                             //  $sqlsubmitcount='select count(*) as count from {assign_submission} where assignment= '.$instanceid.' and status= "submitted"';
@@ -457,32 +456,33 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                                         $str_groupids = implode(",",$arr_groups);
 
-                                        $sql_groupmembers='select userid from {groups_members} where groupid in ('. $str_groupids . ')';
-                                        $arr_groupmembers=$DB->get_records_sql($sql_groupmembers);
+                                        if ($str_groupids!="") {
+                                            $sql_groupmembers = 'select userid from {groups_members} where groupid in (' . $str_groupids . ')';
+                                            $arr_groupmembers = $DB->get_records_sql($sql_groupmembers);
 
-                                        $arr_gmembers = array();
+                                            $arr_gmembers = array();
 
-                                        foreach($arr_groupmembers as $key_groupmembers) {
-                                            $arr_gmembers[] = $key_groupmembers->userid;
-                                        }
+                                            foreach ($arr_groupmembers as $key_groupmembers) {
+                                                $arr_gmembers[] = $key_groupmembers->userid;
+                                            }
 
-                                        $str_gmembers = implode(",",$arr_gmembers);
+                                            $str_gmembers = implode(",", $arr_gmembers);
 
-                                        $sql_submit='select status,timemodified from {assign_submission} where userid in ('. $str_gmembers .') and assignment= '.$instanceid;
-                                        $arr_submit=$DB->get_records_sql($sql_submit);
+                                            $sql_submit = 'select status,timemodified from {assign_submission} where userid in (' . $str_gmembers . ') and assignment= ' . $instanceid;
+                                            $arr_submit = $DB->get_records_sql($sql_submit);
 
-                                        $arrsubmit = new stdClass();
-                                        foreach($arr_submit as $key_submit) {
-                                            if ($key_submit->status == 'submitted') {
-                                                $arrsubmit->status = $key_submit->status;
-                                                $arrsubmit->timemodified = $key_submit->timemodified;
-                                                break;
-                                            } else {
-                                                $arrsubmit->status = $key_submit->status;
-                                                $arrsubmit->timemodified = $key_submit->timemodified;
+                                            $arrsubmit = new stdClass();
+                                            foreach ($arr_submit as $key_submit) {
+                                                if ($key_submit->status == 'submitted') {
+                                                    $arrsubmit->status = $key_submit->status;
+                                                    $arrsubmit->timemodified = $key_submit->timemodified;
+                                                    break;
+                                                } else {
+                                                    $arrsubmit->status = $key_submit->status;
+                                                    $arrsubmit->timemodified = $key_submit->timemodified;
+                                                }
                                             }
                                         }
-
                                     } else {
 
                                         $sqlsubmit = 'select status,timemodified from {assign_submission} where userid= ' . $USER->id . ' and assignment= ' . $instanceid;
@@ -505,32 +505,33 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                                                 $str_groupids = implode(",",$arr_groups);
 
-                                                $sql_groupmembers='select userid from {groups_members} where groupid in ('. $str_groupids . ')';
-                                                $arr_groupmembers=$DB->get_records_sql($sql_groupmembers);
+                                                if ($str_groupids!="") {
+                                                    $sql_groupmembers = 'select userid from {groups_members} where groupid in (' . $str_groupids . ')';
+                                                    $arr_groupmembers = $DB->get_records_sql($sql_groupmembers);
 
-                                                $arr_gmembers = array();
+                                                    $arr_gmembers = array();
 
-                                                foreach($arr_groupmembers as $key_groupmembers) {
-                                                    $arr_gmembers[] = $key_groupmembers->userid;
-                                                }
+                                                    foreach ($arr_groupmembers as $key_groupmembers) {
+                                                        $arr_gmembers[] = $key_groupmembers->userid;
+                                                    }
 
-                                                $str_gmembers = implode(",",$arr_gmembers);
+                                                    $str_gmembers = implode(",", $arr_gmembers);
 
-                                                $sql_submit='select status,timemodified from {assign_submission} where userid in ('. $str_gmembers .') and assignment= '.$instanceid;
-                                                $arr_submit=$DB->get_records_sql($sql_submit);
+                                                    $sql_submit = 'select status,timemodified from {assign_submission} where userid in (' . $str_gmembers . ') and assignment= ' . $instanceid;
+                                                    $arr_submit = $DB->get_records_sql($sql_submit);
 
-                                                $arrsubmit = new stdClass();
-                                                foreach($arr_submit as $key_submit) {
-                                                    if ($key_submit->status == 'submitted') {
-                                                        $arrsubmit->status = $key_submit->status;
-                                                        $arrsubmit->timemodified = $key_submit->timemodified;
-                                                        break;
-                                                    } else {
-                                                        $arrsubmit->status = $key_submit->status;
-                                                        $arrsubmit->timemodified = $key_submit->timemodified;
+                                                    $arrsubmit = new stdClass();
+                                                    foreach ($arr_submit as $key_submit) {
+                                                        if ($key_submit->status == 'submitted') {
+                                                            $arrsubmit->status = $key_submit->status;
+                                                            $arrsubmit->timemodified = $key_submit->timemodified;
+                                                            break;
+                                                        } else {
+                                                            $arrsubmit->status = $key_submit->status;
+                                                            $arrsubmit->timemodified = $key_submit->timemodified;
+                                                        }
                                                     }
                                                 }
-
                                             } else {
 
                                                 $sqlgrade = 'select finalgrade,feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
@@ -1103,12 +1104,11 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
 
             if($resource->mtable== "quiz"){
-                $sqldue='select timeclose from {quiz} where course='.$COURSE->id.' and id= '.$instanceid;
-                $arrdue=$DB->get_record_sql($sqldue);
 
-//                $isDuedateVisible = $this->checkAssignmentConditions($cmid);
-                $isDuedateVisible = false;
+             $sqldue='select timeclose from {quiz} where course='.$COURSE->id.' and id= '.$instanceid;
+             $arrdue=$DB->get_record_sql($sqldue);
 
+            $isDuedateVisible = $this->checkAssignmentConditions($cmid);
 
                 $sqlid="select id from {grade_items} where itemmodule='quiz' and courseid= ".$COURSE->id." and iteminstance= ".$instanceid;
                 $execid=$DB->get_record_sql($sqlid);
@@ -1878,6 +1878,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
             }
             $courserenderer = $this->page->get_renderer('core','course');
             $output = $courserenderer->course_modchooser($modules, $course) . $modchooser . $output;
+//            $output = $courserenderer->course_activitychooser($course->id) . $modchooser . $output;
         }
 
         return $output;
