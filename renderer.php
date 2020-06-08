@@ -283,6 +283,63 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
         return $isDuedateVisible;
     }
+
+
+    public function getGroupInfo($instanceid) {
+        // GET ASSIGNMENT GROUP INFO
+        global $DB, $USER;
+        $sql_assigninfo='select * from {assign} where id= '.$instanceid;
+        $arr_assigninfo=$DB->get_record_sql($sql_assigninfo);
+
+        if ($arr_assigninfo->teamsubmission==1) {
+            $sql_groupids='select groupid from {groups_members} where userid= '.$USER->id;
+            $arr_groupids=$DB->get_records_sql($sql_groupids);
+
+            $arr_groups = array();
+
+            foreach($arr_groupids as $key_groupids) {
+                $arr_groups[] = $key_groupids->groupid;
+            }
+
+            $str_groupids = implode(",",$arr_groups);
+
+            if ($str_groupids!="") {
+                $sql_groupmembers = 'select userid from {groups_members} where groupid in (' . $str_groupids . ')';
+                $arr_groupmembers = $DB->get_records_sql($sql_groupmembers);
+
+                $arr_gmembers = array();
+
+                foreach ($arr_groupmembers as $key_groupmembers) {
+                    $arr_gmembers[] = $key_groupmembers->userid;
+                }
+
+                $str_gmembers = implode(",", $arr_gmembers);
+
+                $sql_submit = 'select status,timemodified from {assign_submission} where userid in (' . $str_gmembers . ') and assignment= ' . $instanceid;
+                $arr_submit = $DB->get_records_sql($sql_submit);
+
+                $arrsubmit = new stdClass();
+                foreach ($arr_submit as $key_submit) {
+                    if ($key_submit->status == 'submitted') {
+                        $arrsubmit->status = $key_submit->status;
+                        $arrsubmit->timemodified = $key_submit->timemodified;
+                        break;
+                    } else {
+                        $arrsubmit->status = $key_submit->status;
+                        $arrsubmit->timemodified = $key_submit->timemodified;
+                    }
+                }
+            }
+        } else {
+
+            $sqlsubmit = 'select status,timemodified from {assign_submission} where userid= ' . $USER->id . ' and assignment= ' . $instanceid;
+            $arrsubmit = $DB->get_record_sql($sqlsubmit);
+        }
+
+        return $arrsubmit;
+    }
+
+
    public function renderAssign($instanceid,$currentuserroleid,$cmid,$html){
                     global $DB,$COURSE,$USER,$CFG;
 
@@ -342,9 +399,11 @@ class block_assessment_information_renderer extends plugin_renderer_base
                             // }
                             if($currentuserroleid == 5){
 
-                                $sqlsubmit='select status,timemodified from {assign_submission} where userid= '.$USER->id.' and assignment= '.$instanceid;
-                                $arrsubmit=$DB->get_record_sql($sqlsubmit);
+//                                $sqlsubmit='select status,timemodified from {assign_submission} where userid= '.$USER->id.' and assignment= '.$instanceid;
+//                                $arrsubmit=$DB->get_record_sql($sqlsubmit);
 
+                                  // CALL FUNCTION TO CHECK GROUP INFO
+                                  $arrsubmit = $this->getGroupInfo($instanceid);
 
 
                                 if( !isset($arrsubmit->status) || $arrsubmit->status == 'new'){
@@ -444,50 +503,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                     $sql_assigninfo='select * from {assign} where id= '.$instanceid;
                                     $arr_assigninfo=$DB->get_record_sql($sql_assigninfo);
 
-                                    if ($arr_assigninfo->teamsubmission==1) {
-                                        $sql_groupids='select groupid from {groups_members} where userid= '.$USER->id;
-                                        $arr_groupids=$DB->get_records_sql($sql_groupids);
-
-                                        $arr_groups = array();
-
-                                        foreach($arr_groupids as $key_groupids) {
-                                            $arr_groups[] = $key_groupids->groupid;
-                                        }
-
-                                        $str_groupids = implode(",",$arr_groups);
-
-                                        if ($str_groupids!="") {
-                                            $sql_groupmembers = 'select userid from {groups_members} where groupid in (' . $str_groupids . ')';
-                                            $arr_groupmembers = $DB->get_records_sql($sql_groupmembers);
-
-                                            $arr_gmembers = array();
-
-                                            foreach ($arr_groupmembers as $key_groupmembers) {
-                                                $arr_gmembers[] = $key_groupmembers->userid;
-                                            }
-
-                                            $str_gmembers = implode(",", $arr_gmembers);
-
-                                            $sql_submit = 'select status,timemodified from {assign_submission} where userid in (' . $str_gmembers . ') and assignment= ' . $instanceid;
-                                            $arr_submit = $DB->get_records_sql($sql_submit);
-
-                                            $arrsubmit = new stdClass();
-                                            foreach ($arr_submit as $key_submit) {
-                                                if ($key_submit->status == 'submitted') {
-                                                    $arrsubmit->status = $key_submit->status;
-                                                    $arrsubmit->timemodified = $key_submit->timemodified;
-                                                    break;
-                                                } else {
-                                                    $arrsubmit->status = $key_submit->status;
-                                                    $arrsubmit->timemodified = $key_submit->timemodified;
-                                                }
-                                            }
-                                        }
-                                    } else {
-
-                                        $sqlsubmit = 'select status,timemodified from {assign_submission} where userid= ' . $USER->id . ' and assignment= ' . $instanceid;
-                                        $arrsubmit = $DB->get_record_sql($sqlsubmit);
-                                    }
+                                    // CALL FUNCTION TO CHECK GROUP INFO
+                                    $arrsubmit = $this->getGroupInfo($instanceid);
 
 
                                         if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted'){
@@ -582,8 +599,9 @@ class block_assessment_information_renderer extends plugin_renderer_base
                     else if($arrdue->duedate == 0){
                         if($currentuserroleid == 5 ){
 
-                              $sqlsubmit='select status,timemodified from {assign_submission} where userid= '.$USER->id.' and assignment= '.$instanceid;
+                             $sqlsubmit='select status,timemodified from {assign_submission} where userid= '.$USER->id.' and assignment= '.$instanceid;
                              $arrsubmit=$DB->get_record_sql($sqlsubmit);
+
                              if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted'){
 
                                     // $sqlgradeshow='select gradevisible from {block_assessment_information} where itemid= '.$cmid.' and mtable = "assign"';
