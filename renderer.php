@@ -408,8 +408,6 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                                 if( !isset($arrsubmit->status) || $arrsubmit->status == 'new'){
 
-
-
                                     if($isDuedateVisible){
 
 
@@ -421,52 +419,54 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
 
                                 }
-                                else if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted'){
+                                else if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted') {
 
                                     // $sqlgradeshow='select gradevisible from {block_assessment_information} where itemid= '.$cmid.' and mtable = "assign"';
                                     // $gradeshow=$DB->get_record_sql($sqlgradeshow);
                                     // if($gradeshow->gradevisible == 1){
 
-                                        $sqlgrade='select finalgrade,feedback,hidden from {grade_grades} where userid= '.$USER->id.' and itemid= '.$gradeitemid;
-                                        $grade=$DB->get_record_sql($sqlgrade);
-                                        // $grade=$exec->finalgrade;
+                                    if (!empty($gradeitemid)) {
+                                        $sqlgrade = 'select finalgrade,feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
+                                        $grade = $DB->get_record_sql($sqlgrade);
+                                    }
+
+                                    // $grade=$exec->finalgrade;
                                     // }
 
 
-                                    if($isDuedateVisible){
-                                        $html.='<label class="due-date badge m-1 "  id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+                                    if ($isDuedateVisible) {
+                                        $html .= '<label class="due-date badge m-1 "  id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
 
-                                        $html.='<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
+                                        $html .= '<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Submitted ' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
                                     }
 
-                                     if($arrsubmit->timemodified >$arrdue->duedate ){
-                                        $late=$arrsubmit->timemodified-$arrdue->duedate;
-                                        $days=intval($late/86400);
-                                        $remain=$late%86400;
-                                        $hours=intval($remain/3600);
-                                        $remain=$remain%3600;
-                                        $mins=intval($remain/60);
-                                        $secs=$remain%60;
+                                    if ($arrsubmit->timemodified > $arrdue->duedate) {
+                                        $late = $arrsubmit->timemodified - $arrdue->duedate;
+                                        $days = intval($late / 86400);
+                                        $remain = $late % 86400;
+                                        $hours = intval($remain / 3600);
+                                        $remain = $remain % 3600;
+                                        $mins = intval($remain / 60);
+                                        $secs = $remain % 60;
 
-                                        if ($secs>=0) $timestring = "0 min".$secs." sec";
-                                        if ($mins>0) $timestring = $mins." min".$secs." sec";
-                                        if ($hours>0) $timestring = $hours." hour".$mins." min";
-                                        if ($days>0) $timestring = $days." day";
+                                        if ($secs >= 0) $timestring = "0 min" . $secs . " sec";
+                                        if ($mins > 0) $timestring = $mins . " min" . $secs . " sec";
+                                        if ($hours > 0) $timestring = $hours . " hour" . $mins . " min";
+                                        if ($days > 0) $timestring = $days . " day";
 
 
-                                        if($isDuedateVisible){
-                                            $html.='<label class="due-date badge m-1 badge-danger" style="border-radius: .25rem;padding:5px;margin-right:5px;">'. $timestring .' Late </label>';
+                                        if ($isDuedateVisible) {
+                                            $html .= '<label class="due-date badge m-1 badge-danger" style="border-radius: .25rem;padding:5px;margin-right:5px;">' . $timestring . ' Late </label>';
                                         }
 
-                                     }
+                                    }
 
-                                    if(($grade->feedback != null || $grade->finalgrade != null) && $grade->hidden != 1 ){
-
-
-                                        if($isDuedateVisible){
-                                            $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
+                                    if (!empty($gradeitemid)) {
+                                        if (($grade->feedback != null || $grade->finalgrade != null) && $grade->hidden != 1) {
+                                            if ($isDuedateVisible) {
+                                                $html .= '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
+                                            }
                                         }
-
                                     }
                                 }
                                 else if(isset($arrsubmit->status) && $arrsubmit->status == 'draft'){
@@ -507,22 +507,22 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                     $arrsubmit = $this->getGroupInfo($instanceid);
 
 
-                                        if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted'){
+                                        if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted') {
 
 
-                                            if ($arr_assigninfo->teamsubmission==1) {
-                                                $sql_groupids='select groupid from {groups_members} where userid= '.$USER->id;
-                                                $arr_groupids=$DB->get_records_sql($sql_groupids);
+                                            if ($arr_assigninfo->teamsubmission == 1) {
+                                                $sql_groupids = 'select groupid from {groups_members} where userid= ' . $USER->id;
+                                                $arr_groupids = $DB->get_records_sql($sql_groupids);
 
                                                 $arr_groups = array();
 
-                                                foreach($arr_groupids as $key_groupids) {
+                                                foreach ($arr_groupids as $key_groupids) {
                                                     $arr_groups[] = $key_groupids->groupid;
                                                 }
 
-                                                $str_groupids = implode(",",$arr_groups);
+                                                $str_groupids = implode(",", $arr_groups);
 
-                                                if ($str_groupids!="") {
+                                                if ($str_groupids != "") {
                                                     $sql_groupmembers = 'select userid from {groups_members} where groupid in (' . $str_groupids . ')';
                                                     $arr_groupmembers = $DB->get_records_sql($sql_groupmembers);
 
@@ -550,27 +550,28 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                                     }
                                                 }
                                             } else {
-
-                                                $sqlgrade = 'select finalgrade,feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
-                                                $grade = $DB->get_record_sql($sqlgrade);
-                                            }
-
-
-                                            if($isDuedateVisible){
-                                                $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
-
-                                                $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
-                                            }
-
-                                            if(($grade->feedback != null || $grade->finalgrade != null) && $grade->hidden != 1){
-
-                                                if($isDuedateVisible){
-                                                    $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
+                                                if (!empty($gradeitemid)) {
+                                                    $sqlgrade = 'select finalgrade,feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
+                                                    $grade = $DB->get_record_sql($sqlgrade);
                                                 }
-
                                             }
 
-                                    }
+
+                                            if ($isDuedateVisible) {
+                                                $html .= '<label class="due-date badge m-1 " id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
+
+                                                $html .= '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted ' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
+                                            }
+
+                                            if (!empty($gradeitemid)) {
+                                                if (($grade->feedback != null || $grade->finalgrade != null) && $grade->hidden != 1) {
+
+                                                    if ($isDuedateVisible) {
+                                                        $html .= '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
+                                                    }
+                                                }
+                                            }
+                                        }
                                     else if(isset($arrsubmit->status) && $arrsubmit->status == 'draft'){
 
 
@@ -602,28 +603,30 @@ class block_assessment_information_renderer extends plugin_renderer_base
                              $sqlsubmit='select status,timemodified from {assign_submission} where userid= '.$USER->id.' and assignment= '.$instanceid;
                              $arrsubmit=$DB->get_record_sql($sqlsubmit);
 
-                             if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted'){
+                             if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted') {
 
-                                    // $sqlgradeshow='select gradevisible from {block_assessment_information} where itemid= '.$cmid.' and mtable = "assign"';
-                                    // $gradeshow=$DB->get_record_sql($sqlgradeshow);
-                                    // if($gradeshow->gradevisible == 1){
+                                 // $sqlgradeshow='select gradevisible from {block_assessment_information} where itemid= '.$cmid.' and mtable = "assign"';
+                                 // $gradeshow=$DB->get_record_sql($sqlgradeshow);
+                                 // if($gradeshow->gradevisible == 1){
+                                 if (!empty($gradeitemid)) {
+                                     $sqlgrade = 'select finalgrade,feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
+                                     $grade = $DB->get_record_sql($sqlgrade);
+                                 }
+                                 // $grade=$exec->finalgrade;
+                                 // }
 
-                                        $sqlgrade='select finalgrade,feedback,hidden from {grade_grades} where userid= '.$USER->id.' and itemid= '.$gradeitemid;
-                                        $grade=$DB->get_record_sql($sqlgrade);
-                                        // $grade=$exec->finalgrade;
-                                    // }
 
-
-                                    if($isDuedateVisible){
-                                        $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted'.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
-                                    }
-                                    if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
-                                        if($isDuedateVisible){
-                                    $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
-                                        }
+                                 if ($isDuedateVisible) {
+                                     $html .= '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
+                                 }
+                                 if (!empty($gradeitemid)) {
+                                     if (($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1) {
+                                         if ($isDuedateVisible) {
+                                             $html .= '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
+                                         }
                                      }
-
-                                }
+                                 }
+                             }
 
                          }
                         // if (is_siteadmin() || $currentuserroleid == 4){
@@ -1184,32 +1187,34 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                 }
 
                             }
-                            else if( isset($arrsubmit->state) && $arrsubmit->state == 'finished'){
-                                $grade="";
+                            else if( isset($arrsubmit->state) && $arrsubmit->state == 'finished') {
+                                $grade = "";
                                 // $sqlgradeshow='select gradevisible from {block_assessment_information} where itemid= '.$cmid.' and mtable = "quiz"';
                                 // $gradeshow=$DB->get_record_sql($sqlgradeshow);
 
                                 // if($gradeshow->gradevisible == 1){
-
-                                     $sqlgrade='select finalgrade,feedback,hidden from {grade_grades} where userid= '.$USER->id.' and itemid= '.$gradeitemid;
-                                    $grade=$DB->get_record_sql($sqlgrade);
-                                    // $grade=$exec->finalgrade;
+                                if (!empty($gradeitemid)) {
+                                    $sqlgrade = 'select finalgrade,feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
+                                    $grade = $DB->get_record_sql($sqlgrade);
+                                }
+                                // $grade=$exec->finalgrade;
 
                                 // }
 
 
-                                if($isDuedateVisible){
-                                $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+                                if ($isDuedateVisible) {
+                                    $html .= '<label class="due-date badge m-1 " id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
 
-                                 $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;">Submitted '.date('d-m-Y H:i',$arrsubmit->timemodified).'</label>';
+                                    $html .= '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;">Submitted ' . date('d-m-Y H:i', $arrsubmit->timemodified) . '</label>';
                                 }
 
 
+                                if (!empty($gradeitemid)) {
+                                    if (($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1) {
 
-                                 if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
-
-                                    if($isDuedateVisible){
-                                 $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
+                                        if ($isDuedateVisible) {
+                                            $html .= '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
+                                        }
                                     }
                                 }
                             }
@@ -1231,28 +1236,30 @@ class block_assessment_information_renderer extends plugin_renderer_base
                          where quiz= '.$instanceid.' and userid= '.$USER->id.' order by timemodified desc LIMIT 1';
                              $arrsubmit=$DB->get_record_sql($sqlsubmit);
 
-                            if( isset($arrsubmit->state) && $arrsubmit->state == 'finished'){
-                                    $grade="";
+                            if( isset($arrsubmit->state) && $arrsubmit->state == 'finished') {
+                                $grade = "";
                                 // $sqlgradeshow='select gradevisible from {block_assessment_information} where itemid= '.$cmid.' and mtable = "quiz"';
                                 // $gradeshow=$DB->get_record_sql($sqlgradeshow);
                                 // if($gradeshow->gradevisible == 1){
-
-                                     $sqlgrade='select finalgrade,feedback,hidden from {grade_grades} where userid= '.$USER->id.' and itemid= '.$gradeitemid;
-                                    $grade=$DB->get_record_sql($sqlgrade);
-                                    // $grade=$exec->finalgrade;
+                                if (!empty($gradeitemid)) {
+                                    $sqlgrade = 'select finalgrade,feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
+                                    $grade = $DB->get_record_sql($sqlgrade);
+                                }
+                                // $grade=$exec->finalgrade;
 
                                 // }
 
-                                    if($isDuedateVisible){
-                                 $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+                                if ($isDuedateVisible) {
+                                    $html .= '<label class="due-date badge m-1 " id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
 
-                                 $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;">Submitted '.date('d-m-Y H:i',$arrsubmit->timemodified).'</label>';
+                                    $html .= '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;">Submitted ' . date('d-m-Y H:i', $arrsubmit->timemodified) . '</label>';
                                 }
 
-                                if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
-
-                                    if($isDuedateVisible){
-                                 $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
+                                if (!empty($gradeitemid)) {
+                                    if (($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1) {
+                                        if ($isDuedateVisible) {
+                                            $html .= '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
+                                        }
                                     }
                                 }
                             }
@@ -1273,29 +1280,31 @@ class block_assessment_information_renderer extends plugin_renderer_base
                             $sqlsubmit='select * FROM {quiz_attempts}
                             where quiz= '.$instanceid.' and userid= '.$USER->id.' order by timemodified desc LIMIT 1';
                              $arrsubmit=$DB->get_record_sql($sqlsubmit);
-                             if( isset($arrsubmit->state) && $arrsubmit->state == 'finished'){
-                                $grade="";
-                                // $sqlgradeshow='select gradevisible from {block_assessment_information} where itemid= '.$cmid.' and mtable = "quiz"';
-                                // $gradeshow=$DB->get_record_sql($sqlgradeshow);
-                                // if($gradeshow->gradevisible == 1){
+                             if( isset($arrsubmit->state) && $arrsubmit->state == 'finished') {
+                                 $grade = "";
+                                 // $sqlgradeshow='select gradevisible from {block_assessment_information} where itemid= '.$cmid.' and mtable = "quiz"';
+                                 // $gradeshow=$DB->get_record_sql($sqlgradeshow);
+                                 // if($gradeshow->gradevisible == 1){
+                                 if (!empty($gradeitemid)) {
+                                     $sqlgrade = 'select finalgrade, feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
+                                     $grade = $DB->get_record_sql($sqlgrade);
+                                 }
+                                 // $grade=$exec->finalgrade;
 
-                                    $sqlgrade='select finalgrade, feedback,hidden from {grade_grades} where userid= '.$USER->id.' and itemid= '.$gradeitemid;
-                                    $grade=$DB->get_record_sql($sqlgrade);
-                                    // $grade=$exec->finalgrade;
-
-                                // }
+                                 // }
 
 
-                                if($isDuedateVisible){
-                                 $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;">Submitted '.date('d-m-Y H:i',$arrsubmit->timemodified).'</label>';
-                                }
-                                if(($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1){
-                                    if($isDuedateVisible){
-                                 $html.='<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="'.$CFG->wwwroot.'/local/qmul_dashboard/index.php?cid='.$COURSE->id.'">Grade and Feedback</a>';
-                                    }
-                                }
-
-                            }
+                                 if ($isDuedateVisible) {
+                                     $html .= '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;">Submitted ' . date('d-m-Y H:i', $arrsubmit->timemodified) . '</label>';
+                                 }
+                                 if (!empty($gradeitemid)) {
+                                     if (($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1) {
+                                         if ($isDuedateVisible) {
+                                             $html .= '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
+                                         }
+                                     }
+                                 }
+                             }
                     }
                     // if (is_siteadmin() || $currentuserroleid == 4){
 
