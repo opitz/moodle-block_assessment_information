@@ -1904,8 +1904,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 $modchooser = html_writer::tag('div', $modchooser, array('class' => 'hide addresourcemodchooser'));
             }
             $courserenderer = $this->page->get_renderer('core','course');
-//            $output = $courserenderer->course_modchooser($modules, $course) . $modchooser . $output;
-            $output = $courserenderer->course_activitychooser($course->id) . $modchooser . $output;
+            $output = $courserenderer->course_modchooser($modules, $course) . $modchooser . $output;
+//            $output = $courserenderer->course_activitychooser($course->id) . $modchooser . $output;
 
         }
 
