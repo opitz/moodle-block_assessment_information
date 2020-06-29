@@ -47,12 +47,11 @@ class assessment_information{
 	public $courseid;
 	private $assignment_tables = array('assign','turnitintool', 'turnitintooltwo', 'quiz', 'workshop', 'lesson', 'kalvidassign');
 	private $assessment_tables = array('page');
-	// public $topic_zero_section = TOPIC_ZERO_SECTION;
-//	public $topic_zero_section = TOPIC_ZERO_SECTION3;
 	private $db;
 
 	function __construct($courseid,$theme){
-		global $DB;
+		global $COURSE, $DB;
+        $this->topic_zero_section = course_get_format($COURSE)->get_last_section_number();
 		$this->db = $DB;
 		$this->courseid = $courseid;
 		//sync assignments
