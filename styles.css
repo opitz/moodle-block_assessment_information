@@ -119,3 +119,7 @@
 .block_assessment_information #coursebox-2{
 	float:right;
 }
+
+.no-link {
+	display:none;
+}

@@ -45,7 +45,7 @@ foreach($courseSectionData as $catsection){
 class assessment_information{
 
 	public $courseid;
-	private $assignment_tables = array('assign','turnitintool', 'turnitintooltwo', 'quiz', 'workshop', 'lesson', 'kalvidassign');
+	public $assignment_tables = array('assign','turnitintool', 'turnitintooltwo', 'quiz', 'workshop', 'lesson', 'kalvidassign');
 	private $assessment_tables = array('page');
 	private $db;
 
@@ -84,6 +84,7 @@ class assessment_information{
 							and cm.id = ai.itemid
 					WHERE a.course = ? and ai.id is NULL
 				", array('modassignment', '?', 'assignment', $table, $this->courseid));
+
 				if($result){
 					$this->db->insert_records('block_assessment_information',$result);
 				}
