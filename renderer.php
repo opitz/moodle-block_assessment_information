@@ -350,8 +350,10 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                    $sqlid="select id from {grade_items} where itemmodule='assign' and courseid= ".$COURSE->id." and iteminstance= ".$instanceid;
                     $execid=$DB->get_record_sql($sqlid);
-                       $gradeitemid=$execid->id;
-
+                    $gradeitemid = "";
+                    if ($execid) {
+                        $gradeitemid = $execid->id;
+                    }
 
                     if($arrdue->duedate != 0){
                         $timestamp=$arrdue->duedate;
@@ -806,7 +808,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
         $courseresources = new assessment_information($COURSE->id,"");
 
         $course_assignment_tables = $courseresources->assignment_tables;
-        
+
 
 
         $sql='select *  from {course_modules} where id='.$cmid;
