@@ -51,9 +51,22 @@ class assessment_information{
 
 	function __construct($courseid,$theme){
 		global $COURSE, $DB;
-        $this->topic_zero_section = course_get_format($COURSE)->get_last_section_number();
+        // $this->topic_zero_section = course_get_format($COURSE)->get_last_section_number();
+        $sql = "
+            select * 
+            from {course_sections} 
+            where course =".$courseid." 
+            and (sequence = '666' or sequence like '666,%' or sequence like '%,666,%' or sequence like '%,666')
+        ";
+        $result = $DB->get_records_sql($sql);
+        $sectionno = course_get_format($COURSE)->get_last_section_number();
+        foreach($result as $res){
+        	$sectionno = $res->section;
+        }
+        $this->topic_zero_section = $sectionno;
 		$this->db = $DB;
 		$this->courseid = $courseid;
+
 		//sync assignments
 		$this->sync_assignmnets();
 		$this->sync_assessments();
@@ -61,6 +74,7 @@ class assessment_information{
 	}
 
 	private function sync_assignmnets(){
+
 		$dbman = $this->db->get_manager();
 		//check diff between course assignments
 		foreach ($this->assignment_tables as $table) {

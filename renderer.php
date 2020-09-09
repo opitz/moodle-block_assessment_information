@@ -54,6 +54,17 @@ if($nextsection == 999 && $COURSE->id > 1){
 */
 
 $nextsection = course_get_format($COURSE)->get_last_section_number();
+$sql = "
+    select * 
+    from {course_sections} 
+    where course =".$COURSE->id." 
+    and (sequence = '666' or sequence like '666,%' or sequence like '%,666,%' or sequence like '%,666')";
+$result = $DB->get_records_sql($sql);
+$nextsection = course_get_format($COURSE)->get_last_section_number();
+foreach($result as $res){
+    $nextsection = $res->section;
+}
+
 // defined('TOPIC_ZERO_SECTION') || define('TOPIC_ZERO_SECTION',52);
 defined('TOPIC_ZERO_SECTION1') || define('TOPIC_ZERO_SECTION1',$nextsection);
 defined('DEFAULT_TOPIC_ZERO_SECTION') || define('DEFAULT_TOPIC_ZERO_SECTION',999);
@@ -126,6 +137,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
         } else {
             $resources = $assessment_information->get_course_resources('assessment');
         }
+
+
         $html .= $this->get_resources_list($resources,'assessment');
 
         //$courserenderer = $this->page->get_renderer('core','course');
@@ -350,10 +363,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                    $sqlid="select id from {grade_items} where itemmodule='assign' and courseid= ".$COURSE->id." and iteminstance= ".$instanceid;
                     $execid=$DB->get_record_sql($sqlid);
-                    $gradeitemid = "";
-                    if ($execid) {
-                        $gradeitemid = $execid->id;
-                    }
+                       $gradeitemid=$execid->id;
+
 
                     if($arrdue->duedate != 0){
                         $timestamp=$arrdue->duedate;
@@ -684,6 +695,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
         foreach($coursesectionData as $csection){
             $count_section+=1;
         }
+        
 
         if($count_section > 0){
             $sql_coursesection = "select max(section) as section from {course_sections} where course=".$COURSE->id." and section!=".TOPIC_ZERO_SECTION1;
@@ -694,30 +706,28 @@ class block_assessment_information_renderer extends plugin_renderer_base
             }
 
             $ai_section_title = get_string('ai_section_title','block_assessment_information');
-//            $sql='update {course_sections} set section='.$nextsection.',name='.$ai_section_title.' where section= '.TOPIC_ZERO_SECTION1.' and course = '.$COURSE->id;
+            //            $sql='update {course_sections} set section='.$nextsection.',name='.$ai_section_title.' where section= '.TOPIC_ZERO_SECTION1.' and course = '.$COURSE->id;
             $sql="update {course_sections} set section=$nextsection,name=$ai_section_title where section= TOPIC_ZERO_SECTION1 and course = $COURSE->id";
             $result=$DB->execute($sql);
             rebuild_course_cache($COURSE->id, true);
         }
 
+        ?>
 
 
-            ?>
+        <script
+          src="https://code.jquery.com/jquery-3.3.1.min.js"
+          integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+          crossorigin="anonymous"></script>
 
-
-                        <script
-  src="https://code.jquery.com/jquery-3.3.1.min.js"
-  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-  crossorigin="anonymous"></script>
-
-  <style type="text/css">
-      .dimmedRes a{
-            opacity: 0.7;
-      }
-      .dimmedRes:hover{
-        cursor: default !important;
-      }
-  </style>
+          <style type="text/css">
+              .dimmedRes a{
+                    opacity: 0.7;
+              }
+              .dimmedRes:hover{
+                cursor: default !important;
+              }
+          </style>
                        <script type="text/javascript">
                            jQuery(document).ready(function($){
 
@@ -787,6 +797,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                        //functions end
             $count = 0;
+
     foreach ($resources as $resource) {
          $cmid=$resource->itemid;//course module id
 
@@ -955,12 +966,9 @@ class block_assessment_information_renderer extends plugin_renderer_base
                         }
                     }
 
-                    //==
 
             }
             else if(is_siteadmin() || ($deletion->groupingid == 0  && count($userarr) == 0)){
-                // echo 'second'."<br>";
-                //==
                 if(is_siteadmin()){
                     if($labelmodText != ''){    // Label mod
 

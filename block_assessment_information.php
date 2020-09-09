@@ -112,7 +112,7 @@ class block_assessment_information extends block_base
             rebuild_course_cache($COURSE->id, true);
         }
     }
-
+ 
     /**
      * Add a new section related to the AI block
      * This is where we will store additional modules if they are added to the block.
@@ -128,7 +128,17 @@ class block_assessment_information extends block_base
     protected function add_invisible_ai_section($course, $name = '', $summary = '') {
         global $COURSE, $DB;
 
+        // $numsections = course_get_format($course)->get_last_section_number();
+        $sql = "
+            select * 
+            from {course_sections} 
+            where course =".$course->id." 
+            and (sequence = '666' or sequence like '666,%' or sequence like '%,666,%' or sequence like '%,666')";
+        $result = $DB->get_records_sql($sql);
         $numsections = course_get_format($course)->get_last_section_number();
+        foreach($result as $res){
+            $numsections = $res->section;
+        }
         $section = course_create_section($course->id, $numsections+1, true);
         $section->name = $name;
         $section->summary = $summary;
@@ -234,7 +244,7 @@ class block_assessment_information extends block_base
         $assessment_information = new assessment_information($COURSE->id,$this->page->theme->name);
 
 
-		// CODE ADDED TO CHANGE ACTIVITY ADDED IN SECTION-52 TO STEALTH STARTS HERE
+		//CODE ADDED TO CHANGE ACTIVITY ADDED IN SECTION-52 TO STEALTH
         $cid = $COURSE->id;
         $sequence = isset($section->sequence) ? $section->sequence:"";
 	if ($sequence!="") {
@@ -246,7 +256,6 @@ class block_assessment_information extends block_base
 
 
 	}
-        // CODE ADDED TO CHANGE ACTIVITY ADDED IN SECTION-52 TO STEALTH STARTS HERE
 
         $this->content = new stdClass();
 
