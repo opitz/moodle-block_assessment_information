@@ -24,7 +24,7 @@
  // No direct script access.
 defined('MOODLE_INTERNAL') || die();
 
-
+ 
 global $DB,$COURSE;
 /*
 $nextsection = 999;
@@ -51,6 +51,7 @@ class assessment_information{
 
 	function __construct($courseid,$theme){
 		global $COURSE, $DB;
+
         // $this->topic_zero_section = course_get_format($COURSE)->get_last_section_number();
         $sql = "
             select * 
@@ -64,9 +65,9 @@ class assessment_information{
         	$sectionno = $res->section;
         }
         $this->topic_zero_section = $sectionno;
+
 		$this->db = $DB;
 		$this->courseid = $courseid;
-
 		//sync assignments
 		$this->sync_assignmnets();
 		$this->sync_assessments();
@@ -74,7 +75,6 @@ class assessment_information{
 	}
 
 	private function sync_assignmnets(){
-
 		$dbman = $this->db->get_manager();
 		//check diff between course assignments
 		foreach ($this->assignment_tables as $table) {

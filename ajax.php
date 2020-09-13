@@ -19,7 +19,7 @@
 			where course = $courseid 
 			and (sequence = '666' or sequence like '666,%' or sequence like '%,666,%' or sequence like '%,666' or section = 52)
 		";
-		
+
 		$result=$DB->get_record_sql($sql);
 
 		if(isset($result) && isset($result->section) && $result->section != ""){
