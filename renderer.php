@@ -313,7 +313,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
             }
 
             $str_groupids = implode(",",$arr_groups);
-
+            $arrsubmit = new stdClass();
             if ($str_groupids!="") {
                 $sql_groupmembers = 'select userid from {groups_members} where groupid in (' . $str_groupids . ')';
                 $arr_groupmembers = $DB->get_records_sql($sql_groupmembers);
@@ -418,19 +418,15 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                   // CALL FUNCTION TO CHECK GROUP INFO
                                   $arrsubmit = $this->getGroupInfo($instanceid);
 
+                                if( !isset($arrsubmit->status)  || $arrsubmit->status == 'new'){
 
-                                if( !isset($arrsubmit->status) || $arrsubmit->status == 'new'){
-
-                                    if($isDuedateVisible){
-
-
-                                        $html.='<label class="due-date badge m-1 shubh" data-toggle="tooltip" title ="Overdue" id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
-
-                                         $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                                    if($isDuedateVisible) {
+                                        $html .= '<label class="due-date badge m-1 shubh" data-toggle="tooltip" title ="Overdue" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
+                                        if (!empty((array) $arrsubmit)){
+                                            $html .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                                        }
                                     }
-
-
-
+                                    
                                 }
                                 else if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted') {
 
