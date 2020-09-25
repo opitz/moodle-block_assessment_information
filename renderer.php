@@ -543,7 +543,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                                                     $str_gmembers = implode(",", $arr_gmembers);
 
-                                                    $sql_submit = 'select status,timemodified from {assign_submission} where userid in (' . $str_gmembers . ') and assignment= ' . $instanceid;
+                                                    $sql_submit = 'select id,status,timemodified from {assign_submission} where userid in (' . $str_gmembers . ') and assignment= ' . $instanceid;
                                                     $arr_submit = $DB->get_records_sql($sql_submit);
 
                                                     $arrsubmit = new stdClass();
