@@ -315,7 +315,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
             $str_groupids = implode(",",$arr_groups);
             $arrsubmit = new stdClass();
             if ($str_groupids!="") {
-                $sql_groupmembers = 'select userid from {groups_members} where groupid in (' . $str_groupids . ')';
+                $sql_groupmembers = 'select id, userid from {groups_members} where groupid in (' . $str_groupids . ')';
                 $arr_groupmembers = $DB->get_records_sql($sql_groupmembers);
 
                 $arr_gmembers = array();
@@ -378,7 +378,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                         $currentdate=time() + 400*24*60*60;
 
-                        
+
                         if($currentdate>$timestamp){
                             // if (is_siteadmin() || $currentuserroleid == 4){
 
@@ -426,7 +426,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                             $html .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                                         }
                                     }
-                                    
+
                                 }
                                 else if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted') {
 
