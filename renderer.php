@@ -301,7 +301,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
         global $DB, $USER;
         $sql_assigninfo='select * from {assign} where id= '.$instanceid;
         $arr_assigninfo=$DB->get_record_sql($sql_assigninfo);
-
+        $arrsubmit = new stdClass();
         if ($arr_assigninfo->teamsubmission==1) {
             $sql_groupids='select groupid from {groups_members} where userid= '.$USER->id;
             $arr_groupids=$DB->get_records_sql($sql_groupids);
