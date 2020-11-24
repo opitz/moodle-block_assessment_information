@@ -24,7 +24,7 @@
  // No direct script access.
 defined('MOODLE_INTERNAL') || die();
 
- 
+
 global $DB,$COURSE;
 /*
 $nextsection = 999;
@@ -147,9 +147,9 @@ class assessment_information{
 		$missingresources = $this->db->get_records_sql("
 			SELECT ai.id
 			FROM {block_assessment_information} as ai
-			JOIN mdl_modules as m
+			JOIN {modules} as m
 				ON ai.mtable = m.name
-			LEFT JOIN mdl_course_modules as cm
+			LEFT JOIN {course_modules} as cm
 			    ON cm.module = m.id AND cm.id = ai.itemid AND cm.course = ai.courseid
 			WHERE ai.courseid = ? AND cm.id is NULL
 		", array($this->courseid));
