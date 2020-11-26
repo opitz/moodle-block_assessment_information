@@ -1842,7 +1842,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
     //This is a function copied from course renderer
     function get_activity_chooser_control($course, $section, $sectionreturn = null, $displayoptions = array()) {
-        global $CFG;
+        global $CFG, $USER;
 
 
         $vertical = !empty($displayoptions['inblock']);
@@ -1855,7 +1855,11 @@ class block_assessment_information_renderer extends plugin_renderer_base
         }
 
         // Retrieve all modules with associated metadata
-        $modules = get_module_metadata($course, $modnames, $sectionreturn);
+//        $modules = get_module_metadata($course, $modnames, $sectionreturn);
+        $cis = new \core_course\local\service\content_item_service(
+            new \core_course\local\repository\content_item_readonly_repository()
+        );
+        $modules = $cis->get_content_items_for_user_in_course($USER, $course);
         $urlparams = array('section' => $section);
 
         // We'll sort resources and activities into two lists
@@ -1892,7 +1896,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
                     // System modules cannot be added by user, do not add to dropdown
                     continue;
                 }
-                $link = $module->link->out(true, $urlparams);
+//                $link = $module->link->out(true, $urlparams);
+                $link = $module->link . '&amp;section=' . $section;
                 $activities[$activityclass][$link] = $module->title;
             }
         }
@@ -1952,8 +1957,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 $modchooser = html_writer::tag('div', $modchooser, array('class' => 'hide addresourcemodchooser'));
             }
             $courserenderer = $this->page->get_renderer('core','course');
-            $output = $courserenderer->course_modchooser($modules, $course) . $modchooser . $output;
-//            $output = $courserenderer->course_activitychooser($course->id) . $modchooser . $output;
+//            $output = $courserenderer->course_modchooser($modules, $course) . $modchooser . $output;
+            $output = $courserenderer->course_activitychooser($course->id) . $modchooser . $output;
 
         }
 
