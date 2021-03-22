@@ -365,6 +365,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                         $gradeitemid = $execid->id;
                     }
 
+                    $extngranted = false;
                     if($arrdue->duedate != 0){
                         $timestamp=$arrdue->duedate;
 
@@ -372,6 +373,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                         $sql_dateextn="select extensionduedate from {assign_user_flags} where userid=" . $USER->id . " AND assignment= ".$instanceid;
                         if ($arr_dateextn=$DB->get_record_sql($sql_dateextn)) {
                             $timestamp = $arr_dateextn->extensionduedate;
+                            $extngranted = true;
                         }
 
                         $date = date('d-m-Y H:i', $timestamp);
@@ -422,7 +424,12 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                                     if($isDuedateVisible) {
                                         $html .= '<label class="due-date badge m-1 shubh" data-toggle="tooltip" title ="Overdue" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
-                                        if (!empty((array) $arrsubmit)){
+
+                                        if ($extngranted) {
+                                            $html .= '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due</label>';
+                                        }
+
+                                        if (!empty((array) $arrsubmit) && !$extngranted){
                                             $html .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                                         }
                                     }
