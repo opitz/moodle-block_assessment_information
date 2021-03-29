@@ -53,8 +53,7 @@ if($nextsection == 999 && $COURSE->id > 1){
 }
 */
 
-$sql = "
-    select * 
+$sql = "select * 
     from {course_sections} 
     where course =".$COURSE->id." 
     and (sequence = '666' or sequence like '666,%' or sequence like '%,666,%' or sequence like '%,666')";
@@ -355,7 +354,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                     global $DB,$COURSE,$USER,$CFG;
 
         $isDuedateVisible = $this->checkAssignmentConditions($cmid);
-                    $sqldue='select duedate from {assign} where course='.$COURSE->id.' and id= '.$instanceid;
+                    $sqldue='select duedate,cutoffdate from {assign} where course='.$COURSE->id.' and id= '.$instanceid;
                     $arrdue=$DB->get_record_sql($sqldue);
 
                    $sqlid="select id from {grade_items} where itemmodule='assign' and courseid= ".$COURSE->id." and iteminstance= ".$instanceid;
@@ -366,6 +365,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                     }
 
                     $extngranted = false;
+
                     if($arrdue->duedate != 0){
                         $timestamp=$arrdue->duedate;
 
@@ -376,42 +376,27 @@ class block_assessment_information_renderer extends plugin_renderer_base
                             $extngranted = true;
                         }
 
+                        if($arrdue->cutoffdate != 0){
+                            $extngranted = true;
+
+                            if ($arrdue->cutoffdate>$arr_dateextn->extensionduedate) {
+                                $timestamp = $arrdue->cutoffdate;
+                            } else {
+                                $timestamp = $arr_dateextn->extensionduedate;
+                            }
+                        }
+
+//                        echo date("Y m d", $timestamp);
                         $date = date('d-m-Y H:i', $timestamp);
 
-                        $currentdate=time() + 400*24*60*60;
+                        /// $currentdate=time() + 24*60*60;
 
+                        $currentdate = time();
 
-                        if($currentdate>$timestamp){
-                            // if (is_siteadmin() || $currentuserroleid == 4){
+//echo date("Y m d", $currentdate) .  " / " . date("Y m d", $timestamp);
+//exit;
+                        if($currentdate<$timestamp){
 
-                            //  $sqlsubmitcount='select count(*) as count from {assign_submission} where assignment= '.$instanceid.' and status= "submitted"';
-                            //     $arrsubcount=$DB->get_record_sql($sqlsubmitcount);
-                            //     /*graded count*/
-
-                            //     if($gradeitemid != ""){
-
-                            //         //* graded count*/
-                            //         $sqlgraded='select count(*) as count from {grade_grades} where finalgrade >= 0 and itemid= '.$gradeitemid;
-                            //         $exec1=$DB->get_record_sql($sqlgraded);
-                            //         $gradedcount=$exec1->count;
-
-
-                            //     }
-
-                            //     /*graded count*/
-                            //     if($arrsubcount->count != ""){
-                            //         $submitcount=$arrsubcount->count;
-
-                            //         $html.='<label style="float:right;color:blue;font-size: smaller;">'.$submitcount.' of '.$total_users.' submitted</label><br>';
-                            //         $html.='<label style="float:right;color:blue;font-size: smaller;">'.
-                            //         ($gradedcount != 0 ?($submitcount-$gradedcount):'All').' Ungraded</label><br>';
-
-                            //         $html.='<label class="due-date badge m-1 badge-danger"  id="due_'.$instanceid.'" style="float:right;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
-
-
-                            //     }
-
-                            // }
                             if($currentuserroleid == 5){
 
 //                                $sqlsubmit='select status,timemodified from {assign_submission} where userid= '.$USER->id.' and assignment= '.$instanceid;
@@ -420,18 +405,19 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                   // CALL FUNCTION TO CHECK GROUP INFO
                                   $arrsubmit = $this->getGroupInfo($instanceid);
 
+
                                 if( !isset($arrsubmit->status)  || $arrsubmit->status == 'new'){
 
                                     if($isDuedateVisible) {
                                         $html .= '<label class="due-date badge m-1 shubh" data-toggle="tooltip" title ="Overdue" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
 
-                                        if ($extngranted) {
+                                        if ($extngranted && $timestamp>$currentdate) {
                                             $html .= '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due</label>';
                                         }
-
-                                        if (!empty((array) $arrsubmit) && !$extngranted){
+                                        if (!$extngranted ){
                                             $html .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                                         }
+
                                     }
 
                                 }
@@ -510,7 +496,6 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
 
                              // }
-
 
 
                                 if($currentuserroleid == 5 ){
@@ -600,10 +585,24 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                                     }
                                      else{
-
                                         if($isDuedateVisible){
                                        $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="
                                             border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+//echo $extngranted . " / " . date("d m Y", $timestamp) . " // " . date("d m Y", time());
+//exit;
+                                       ///
+
+                                            if ($extngranted && $timestamp>$currentdate) {
+                                                $html .= '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due</label>';
+                                            }
+                                            if (!$extngranted ){
+                                                $html .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                                            }
+                                            if ($extngranted && $timestamp<$currentdate ){
+                                                $html .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                                            }
+                                            
+                                       ///
                                         }
                                      }
 
@@ -614,6 +613,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                     }
                     else if($arrdue->duedate == 0){
+
                         if($currentuserroleid == 5 ){
 
                              $sqlsubmit='select status,timemodified from {assign_submission} where userid= '.$USER->id.' and assignment= '.$instanceid;
@@ -645,6 +645,9 @@ class block_assessment_information_renderer extends plugin_renderer_base
                              }
 
                          }
+
+
+
                         // if (is_siteadmin() || $currentuserroleid == 4){
 
                         //      $sqlsubmitcount='select count(*) as count from {assign_submission} where assignment= '.$instanceid.' and status= "submitted"';
@@ -671,6 +674,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
                         //         }
                         // }
                     }
+
+
                     return $html;
 
                 }
