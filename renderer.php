@@ -372,7 +372,6 @@ class block_assessment_information_renderer extends plugin_renderer_base
                         //Extension due date starts
                         $sql_dateextn="select extensionduedate from {assign_user_flags} where userid=" . $USER->id . " AND assignment= ".$instanceid;
                         if ($arr_dateextn=$DB->get_record_sql($sql_dateextn)) {
-                            $timestamp = $arr_dateextn->extensionduedate;
                             $extngranted = true;
                         }
 
@@ -380,18 +379,18 @@ class block_assessment_information_renderer extends plugin_renderer_base
                             $extngranted = true;
 
                             if ($arrdue->cutoffdate>$arr_dateextn->extensionduedate) {
-                                $timestamp = $arrdue->cutoffdate;
+                                $cutoffdate = $arrdue->cutoffdate;
                             } else {
-                                $timestamp = $arr_dateextn->extensionduedate;
+                                $extensionduedate = $arr_dateextn->extensionduedate;
                             }
                         }
 
 //                        echo date("Y m d", $timestamp);
                         $date = date('d-m-Y H:i', $timestamp);
 
-                        /// $currentdate=time() + 24*60*60;
+                         // $currentdate=time() + 2*24*60*60;
 
-                        $currentdate = time();
+                       $currentdate = time();
 
 //echo date("Y m d", $currentdate) .  " / " . date("Y m d", $timestamp);
 //exit;
@@ -414,7 +413,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                         if ($extngranted && $timestamp>$currentdate) {
                                             $html .= '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due</label>';
                                         }
-                                        if (!$extngranted ){
+                                        if (!$extngranted && $currentdate>$timestamp){
                                             $html .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                                         }
 
@@ -588,19 +587,18 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                         if($isDuedateVisible){
                                        $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="
                                             border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
-//echo $extngranted . " / " . date("d m Y", $timestamp) . " // " . date("d m Y", time());
-//exit;
+/// echo $extngranted . " / " . date("d m Y", $timestamp) . " // " . date("d m Y", $currentdate) . "<br/>";
+
+
                                        ///
 
-                                            if ($extngranted && $timestamp>$currentdate) {
+                                            if ($extngranted && ($timestamp>$cutoffdate || $timestamp>$extensionduedate)) {
                                                 $html .= '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due</label>';
                                             }
-                                            if (!$extngranted ){
+                                            if (!$extngranted && $currentdate > $timestamp){
                                                 $html .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                                             }
-                                            if ($extngranted && $timestamp<$currentdate ){
-                                                $html .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
-                                            }
+
                                             
                                        ///
                                         }
@@ -1242,8 +1240,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                                 if($isDuedateVisible){
                                 $html.='<label class="due-date badge m-1" data-toggle="tooltip" title ="Overdue" id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
-
-                                    $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                                $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                                 }
 
                             }
