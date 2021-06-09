@@ -253,15 +253,14 @@ class block_assessment_information extends block_base
 		// CHANGE ACTIVITY ADDED IN SECTION-52 TO STEALTH STARTS HERE
         $cid = $COURSE->id;
         $sequence = isset($section->sequence) ? $section->sequence:"";
-	if ($sequence!="") {
-        $sql_stealth = "UPDATE {course_modules} SET visible=1, visibleoncoursepage=0 WHERE id in (" . $sequence . ")";
+	    if ($sequence!="") {
+            $sql_stealth = "UPDATE {course_modules} SET visible=1, visibleoncoursepage=0 WHERE id in (" . $sequence . ")";
 
-        $DB->execute($sql_stealth);
+            $DB->execute($sql_stealth);
 
-        rebuild_course_cache($cid);
+            rebuild_course_cache($cid);
 
-
-	}
+	    }
 
         $this->content = new stdClass();
 

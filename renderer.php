@@ -134,7 +134,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
             $resources = $assessment_information->get_course_resources('assessment',0);
         } else {
             $resources = $assessment_information->get_course_resources('assessment');
-        }
+        } 
         $html .= $this->get_resources_list($resources,'assessment');
 
         //$courserenderer = $this->page->get_renderer('core','course');
@@ -351,332 +351,449 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
 
    public function renderAssign($instanceid,$currentuserroleid,$cmid,$html){
-                    global $DB,$COURSE,$USER,$CFG;
+        global $DB,$COURSE,$USER,$CFG;
 
         $isDuedateVisible = $this->checkAssignmentConditions($cmid);
-                    $sqldue='select duedate,cutoffdate from {assign} where course='.$COURSE->id.' and id= '.$instanceid;
-                    $arrdue=$DB->get_record_sql($sqldue);
-
-                   $sqlid="select id from {grade_items} where itemmodule='assign' and courseid= ".$COURSE->id." and iteminstance= ".$instanceid;
-                    $execid=$DB->get_record_sql($sqlid);
-                    $gradeitemid = "";
-                    if ($execid) {
-                        $gradeitemid = $execid->id;
-                    }
-
-                    $extngranted = false;
-
-                    if($arrdue->duedate != 0){
-                        $timestamp=$arrdue->duedate;
-
-                        //Extension due date starts
-                        $sql_dateextn="select extensionduedate from {assign_user_flags} where userid=" . $USER->id . " AND assignment= ".$instanceid;
-                        if ($arr_dateextn=$DB->get_record_sql($sql_dateextn)) {
-                            $extngranted = true;
-                        }
-
-                        if($arrdue->cutoffdate != 0){
-                            $extngranted = true;
-
-                            if ($arrdue->cutoffdate>$arr_dateextn->extensionduedate) {
-                                $cutoffdate = $arrdue->cutoffdate;
-                            } else {
-                                $extensionduedate = $arr_dateextn->extensionduedate;
-                            }
-                        }
-
-//                        echo date("Y m d", $timestamp);
-                        $date = date('d-m-Y H:i', $timestamp);
-
-                         // $currentdate=time() + 2*24*60*60;
-
-                       $currentdate = time();
-
-//echo date("Y m d", $currentdate) .  " / " . date("Y m d", $timestamp);
-//exit;
-                        if($currentdate<$timestamp){
-
-                            if($currentuserroleid == 5){
-
-//                                $sqlsubmit='select status,timemodified from {assign_submission} where userid= '.$USER->id.' and assignment= '.$instanceid;
-//                                $arrsubmit=$DB->get_record_sql($sqlsubmit);
-
-                                  // CALL FUNCTION TO CHECK GROUP INFO
-                                  $arrsubmit = $this->getGroupInfo($instanceid);
-
-
-                                if( !isset($arrsubmit->status)  || $arrsubmit->status == 'new'){
-
-                                    if($isDuedateVisible) {
-                                        $html .= '<label class="due-date badge m-1 shubh" data-toggle="tooltip" title ="Overdue" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
-
-                                        if ($extngranted && $timestamp>$currentdate) {
-                                            $html .= '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due</label>';
-                                        }
-                                        if (!$extngranted && $currentdate>$timestamp){
-                                            $html .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
-                                        }
-
-                                    }
-
-                                }
-                                else if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted') {
-
-                                    // $sqlgradeshow='select gradevisible from {block_assessment_information} where itemid= '.$cmid.' and mtable = "assign"';
-                                    // $gradeshow=$DB->get_record_sql($sqlgradeshow);
-                                    // if($gradeshow->gradevisible == 1){
-
-                                    if (!empty($gradeitemid)) {
-                                        $sqlgrade = 'select finalgrade,feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
-                                        $grade = $DB->get_record_sql($sqlgrade);
-                                    }
-
-                                    // $grade=$exec->finalgrade;
-                                    // }
-
-
-                                    if ($isDuedateVisible) {
-                                        $html .= '<label class="due-date badge m-1 "  id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
-
-                                        $html .= '<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Submitted ' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
-                                    }
-
-                                    if ($arrsubmit->timemodified > $arrdue->duedate) {
-                                        $late = $arrsubmit->timemodified - $arrdue->duedate;
-                                        $days = intval($late / 86400);
-                                        $remain = $late % 86400;
-                                        $hours = intval($remain / 3600);
-                                        $remain = $remain % 3600;
-                                        $mins = intval($remain / 60);
-                                        $secs = $remain % 60;
-
-                                        if ($secs >= 0) $timestring = "0 min" . $secs . " sec";
-                                        if ($mins > 0) $timestring = $mins . " min" . $secs . " sec";
-                                        if ($hours > 0) $timestring = $hours . " hour" . $mins . " min";
-                                        if ($days > 0) $timestring = $days . " day";
-
-
-                                        if ($isDuedateVisible) {
-                                            $html .= '<label class="due-date badge m-1 badge-danger" style="border-radius: .25rem;padding:5px;margin-right:5px;">' . $timestring . ' Late </label>';
-                                        }
-
-                                    }
-
-                                    if (!empty($gradeitemid)) {
-                                        if (($grade->feedback != null || $grade->finalgrade != null) && $grade->hidden != 1) {
-                                            if ($isDuedateVisible) {
-                                                $html .= '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
-                                            }
-                                        }
-                                    }
-                                }
-                                else if(isset($arrsubmit->status) && $arrsubmit->status == 'draft'){
-
-
-                                    if($isDuedateVisible){
-                                        $html.='<label class="due-date badge m-1 "  id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
-
-                                        $html.='<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Draft Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
-
-                                        $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
-                                    }
-
-
-                                }
-
-                            }
-
-                        }
-                        else{
-
-                             // if (is_siteadmin() || $currentuserroleid == 4){
-
-                             //             $html.='<label class="due-date badge m-1 badge-danger" id="due_'.$instanceid.'" style=" background-color: #F7882F;float:right;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
-
-
-                             // }
-
-
-                                if($currentuserroleid == 5 ){
-
-                                   // GET ASSIGNMENT GROUP INFO
-                                    $sql_assigninfo='select * from {assign} where id= '.$instanceid;
-                                    $arr_assigninfo=$DB->get_record_sql($sql_assigninfo);
-
-                                    // CALL FUNCTION TO CHECK GROUP INFO
-                                    $arrsubmit = $this->getGroupInfo($instanceid);
-
-
-                                        if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted') {
-
-
-                                            if ($arr_assigninfo->teamsubmission == 1) {
-                                                $sql_groupids = 'select groupid from {groups_members} where userid= ' . $USER->id;
-                                                $arr_groupids = $DB->get_records_sql($sql_groupids);
-
-                                                $arr_groups = array();
-
-                                                foreach ($arr_groupids as $key_groupids) {
-                                                    $arr_groups[] = $key_groupids->groupid;
-                                                }
-
-                                                $str_groupids = implode(",", $arr_groups);
-
-                                                if ($str_groupids != "") {
-                                                    $sql_groupmembers = 'select userid from {groups_members} where groupid in (' . $str_groupids . ')';
-                                                    $arr_groupmembers = $DB->get_records_sql($sql_groupmembers);
-
-                                                    $arr_gmembers = array();
-
-                                                    foreach ($arr_groupmembers as $key_groupmembers) {
-                                                        $arr_gmembers[] = $key_groupmembers->userid;
-                                                    }
-
-                                                    $str_gmembers = implode(",", $arr_gmembers);
-
-                                                    $sql_submit = 'select id,status,timemodified from {assign_submission} where userid in (' . $str_gmembers . ') and assignment= ' . $instanceid;
-                                                    $arr_submit = $DB->get_records_sql($sql_submit);
-
-                                                    $arrsubmit = new stdClass();
-                                                    foreach ($arr_submit as $key_submit) {
-                                                        if ($key_submit->status == 'submitted') {
-                                                            $arrsubmit->status = $key_submit->status;
-                                                            $arrsubmit->timemodified = $key_submit->timemodified;
-                                                            break;
-                                                        } else {
-                                                            $arrsubmit->status = $key_submit->status;
-                                                            $arrsubmit->timemodified = $key_submit->timemodified;
-                                                        }
-                                                    }
-                                                }
-                                            } else {
-                                                if (!empty($gradeitemid)) {
-                                                    $sqlgrade = 'select finalgrade,feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
-                                                    $grade = $DB->get_record_sql($sqlgrade);
-                                                }
-                                            }
-
-
-                                            if ($isDuedateVisible) {
-                                                $html .= '<label class="due-date badge m-1 " id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
-
-                                                $html .= '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted ' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
-                                            }
-
-                                            if (!empty($gradeitemid)) {
-                                                if (($grade->feedback != null || $grade->finalgrade != null) && $grade->hidden != 1) {
-
-                                                    if ($isDuedateVisible) {
-                                                        $html .= '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    else if(isset($arrsubmit->status) && $arrsubmit->status == 'draft'){
-
-
-                                        if($isDuedateVisible){
-                                            $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
-
-                                            $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;"> Draft Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
-                                        }
-
-
-                                    }
-                                     else{
-                                        if($isDuedateVisible){
-                                       $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="
+        $sqldue='select duedate,cutoffdate from {assign} where course='.$COURSE->id.' and id= '.$instanceid;
+        $arrdue=$DB->get_record_sql($sqldue);
+
+        $sqlid="select id from {grade_items} where itemmodule='assign' and courseid= ".$COURSE->id." and iteminstance= ".$instanceid;
+        $execid=$DB->get_record_sql($sqlid);
+        $gradeitemid = "";
+        if ($execid) {
+            $gradeitemid = $execid->id;
+        }
+
+        $extngranted = false;
+
+        if($arrdue->duedate != 0){
+            $timestamp=$arrdue->duedate;
+
+            //Extension due date starts
+            $sql_dateextn="select extensionduedate from {assign_user_flags} where userid=" . $USER->id . " AND assignment= ".$instanceid;
+            if ($arr_dateextn=$DB->get_record_sql($sql_dateextn)) {
+                $extngranted = true;
+            } 
+            $cutoffdate = 0;$extensionduedate = 0;
+            if($arrdue->cutoffdate != 0 && isset($arr_dateextn->extensionduedate)){
+                $extngranted = true;
+
+                if ($arrdue->cutoffdate>$arr_dateextn->extensionduedate) {
+                    $cutoffdate = $arrdue->cutoffdate;
+                } else {
+                    $extensionduedate = $arr_dateextn->extensionduedate;
+                }
+            }
+
+            //                        echo date("Y m d", $timestamp);
+            $date = date('d-m-Y H:i', $timestamp);
+            $edate2 = date('d-m-Y H:i', $extensionduedate);
+            // $currentdate=time() + 2*24*60*60;
+
+            $currentdate = time();
+            $currentdate_date = date('d-m-Y', $currentdate);
+            $tomorrowdate = date("d-m-Y", strtotime("+1 day"));
+            $timestamp_date = date('d-m-Y', $timestamp);
+            $extensionduedate_date = date('d-m-Y', $extensionduedate);
+            $date2 = date('d-m-Y H:i', $currentdate);
+            // echo "date : ".$date." , date2 : ".$date2;die;
+            // echo date("Y m d", $currentdate) .  " / " . date("Y m d", $timestamp);
+            // exit;
+            if($currentdate<$timestamp){
+
+                if($currentuserroleid == 5){
+
+                    //                                $sqlsubmit='select status,timemodified from {assign_submission} where userid= '.$USER->id.' and assignment= '.$instanceid;
+                    //                                $arrsubmit=$DB->get_record_sql($sqlsubmit);
+
+                    // CALL FUNCTION TO CHECK GROUP INFO
+                    $arrsubmit = $this->getGroupInfo($instanceid);
+
+                    if( !isset($arrsubmit->status)  || $arrsubmit->status == 'new'){
+
+                        if($isDuedateVisible) {
+                            $assignmentstatus = "";
+
+                            $assignmentduedate = "";
+                            if($extngranted && $extensionduedate > 0){
+                                $assignmentduedate ='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="
+                                            border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$edate2.'</label>';
+                            }else{
+                                $assignmentduedate ='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="
                                             border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
-/// echo $extngranted . " / " . date("d m Y", $timestamp) . " // " . date("d m Y", $currentdate) . "<br/>";
+                            }
+
+                            if ($extngranted && $timestamp>$currentdate) {
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due</label>';
+                            }
+                            if (!$extngranted && $currentdate>$timestamp){
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                            }
+
+                            ## 4. Due date today and the cut of date is in the future (Assignment is labelled as 'Due Today' and is red. Date given is the due date.)
+                            if($extngranted && ( ($currentdate_date == $extensionduedate_date) ) && ($cutoffdate>$currentdate) ){
+                                $assignmentstatus = $assignmentduedate;
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
+                            }elseif( ($currentdate_date == $timestamp_date) && ($cutoffdate>$currentdate) ){
+                                $assignmentstatus = $assignmentduedate;
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
+                            }
+
+                            ## 6. Due date is in the future and the cut of date is the same as the due date (No label. Due Date only shown.)
+                            if ($extngranted && ($currentdate < $extensionduedate) && ($extensionduedate == $cutoffdate) ) {
+                                $assignmentstatus = $assignmentduedate;
+                            }elseif ( ($currentdate < $timestamp) && ($timestamp== $cutoffdate) ) {
+                                $assignmentstatus = $assignmentduedate;
+                            }
+
+                            ## 7. Due date is in the future and the cut of date is further in the future than the due date (No label. Due Date only shown.)
+                            if( $extngranted && $cutoffdate > 0 && ($extensionduedate >$currentdate) && ($cutoffdate > $extensionduedate) ){
+                                $assignmentstatus = $assignmentduedate;
+                            }elseif( $cutoffdate > 0 && ($timestamp >$currentdate) && ($cutoffdate > $timestamp) ){
+                                $assignmentstatus = $assignmentduedate;
+                            }
+
+                            ## 12. Due date is tomorrow and cut off in the future (Assignment is labelled as 'Due Soon' and is yellow. Date given is the due date.)
+                            if($extngranted && $tomorrowdate == $extensionduedate_date && $cutoffdate>$extensionduedate){
+                                $assignmentstatus = $assignmentduedate;
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due Soon" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Soon</label>';
+                            }elseif($tomorrowdate == $timestamp_date && $cutoffdate>$timestamp){
+                                $assignmentstatus = $assignmentduedate;
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due Soon" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Soon</label>';
+                            }
+
+                            ## 4. Due date today and the cut of date is in the future (Assignment is labelled as 'Due Today' and is red. Date given is the due date.)
+                            if($extngranted && ( ($currentdate_date == $extensionduedate_date && $currentdate < $timestamp) ) && ($cutoffdate>$currentdate) ){
+                                $assignmentstatus = $assignmentduedate;
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
+                            }elseif( ($currentdate_date == $timestamp_date && $currentdate < $timestamp ) && ($cutoffdate>$currentdate) ){
+                                $assignmentstatus = $assignmentduedate;
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
+                            }
+
+                            ## 5. Due date is in the future and no cut of date (cut off date is disabled) - (No label. Due Date only shown.)
+                            if($extngranted && $extensionduedate > 0 && $cutoffdate == 0 && ($extensionduedate>$currentdate)){
+                                $assignmentstatus = $assignmentduedate;
+                            }elseif($cutoffdate == 0 && $timestamp>$currentdate){
+                                $assignmentstatus = $assignmentduedate; 
+                            }
+                            $html .= $assignmentstatus;
+
+                        }
+
+                    }
+                    else if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted') {
+
+                        // $sqlgradeshow='select gradevisible from {block_assessment_information} where itemid= '.$cmid.' and mtable = "assign"';
+                        // $gradeshow=$DB->get_record_sql($sqlgradeshow);
+                        // if($gradeshow->gradevisible == 1){
+
+                        if (!empty($gradeitemid)) {
+                            $sqlgrade = 'select finalgrade,feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
+                            $grade = $DB->get_record_sql($sqlgrade);
+                        }
+
+                        // $grade=$exec->finalgrade;
+                        // }
 
 
-                                       ///
+                        if ($isDuedateVisible) {
+                            $html .= '<label class="due-date badge m-1 "  id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
 
-                                            if ($extngranted && ($timestamp>$cutoffdate || $timestamp>$extensionduedate)) {
-                                                $html .= '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due</label>';
-                                            }
-                                            if (!$extngranted && $currentdate > $timestamp){
-                                                $html .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
-                                            }
+                            $html .= '<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Submitted ' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
+                        }
 
-                                            
-                                       ///
-                                        }
-                                     }
+                        if ($arrsubmit->timemodified > $arrdue->duedate) {
+                            $late = $arrsubmit->timemodified - $arrdue->duedate;
+                            $days = intval($late / 86400);
+                            $remain = $late % 86400;
+                            $hours = intval($remain / 3600);
+                            $remain = $remain % 3600;
+                            $mins = intval($remain / 60);
+                            $secs = $remain % 60;
 
+                            if ($secs >= 0) $timestring = "0 min" . $secs . " sec";
+                            if ($mins > 0) $timestring = $mins . " min" . $secs . " sec";
+                            if ($hours > 0) $timestring = $hours . " hour" . $mins . " min";
+                            if ($days > 0) $timestring = $days . " day";
+
+
+                            if ($isDuedateVisible) {
+                                $html .= '<label class="due-date badge m-1 badge-danger" style="border-radius: .25rem;padding:5px;margin-right:5px;">' . $timestring . ' Late </label>';
+                            }
+
+                        }
+
+                        if (!empty($gradeitemid)) {
+                            if (($grade->feedback != null || $grade->finalgrade != null) && $grade->hidden != 1) {
+                                if ($isDuedateVisible) {
+                                    $html .= '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
                                 }
+                            }
+                        }
+                    }
+                    else if(isset($arrsubmit->status) && $arrsubmit->status == 'draft'){
 
+
+                        if($isDuedateVisible){
+                            $html.='<label class="due-date badge m-1 "  id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+
+                            $html.='<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Draft Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
+
+                            $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                         }
 
 
                     }
-                    else if($arrdue->duedate == 0){
-
-                        if($currentuserroleid == 5 ){
-
-                             $sqlsubmit='select status,timemodified from {assign_submission} where userid= '.$USER->id.' and assignment= '.$instanceid;
-                             $arrsubmit=$DB->get_record_sql($sqlsubmit);
-
-                             if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted') {
-
-                                 // $sqlgradeshow='select gradevisible from {block_assessment_information} where itemid= '.$cmid.' and mtable = "assign"';
-                                 // $gradeshow=$DB->get_record_sql($sqlgradeshow);
-                                 // if($gradeshow->gradevisible == 1){
-                                 if (!empty($gradeitemid)) {
-                                     $sqlgrade = 'select finalgrade,feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
-                                     $grade = $DB->get_record_sql($sqlgrade);
-                                 }
-                                 // $grade=$exec->finalgrade;
-                                 // }
-
-
-                                 if ($isDuedateVisible) {
-                                     $html .= '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
-                                 }
-                                 if (!empty($gradeitemid)) {
-                                     if (($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1) {
-                                         if ($isDuedateVisible) {
-                                             $html .= '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
-                                         }
-                                     }
-                                 }
-                             }
-
-                         }
-
-
-
-                        // if (is_siteadmin() || $currentuserroleid == 4){
-
-                        //      $sqlsubmitcount='select count(*) as count from {assign_submission} where assignment= '.$instanceid.' and status= "submitted"';
-                        //         $arrsubcount=$DB->get_record_sql($sqlsubmitcount);
-                        //         /*graded count*/
-
-                        //         if($gradeitemid != ""){
-
-                        //             //* graded count*/
-                        //             $sqlgraded='select count(*) as count from {grade_grades} where finalgrade >= 0 and itemid= '.$gradeitemid;
-                        //             $exec1=$DB->get_record_sql($sqlgraded);
-                        //             $gradedcount=$exec1->count;
-
-
-                        //         }
-
-                        //         /*graded count*/
-                        //         if($arrsubcount->count != ""){
-                        //             $submitcount=$arrsubcount->count;
-
-                        //             $html.='<label style="float:right;color:blue;font-size: smaller;">'.$submitcount.' of '.$total_users.' submitted</label><br>';
-                        //             $html.='<label style="float:right;color:blue;font-size: smaller;">'.
-                        //             ($gradedcount != 0 ?($submitcount-$gradedcount):'All').' Ungraded</label><br>';
-                        //         }
-                        // }
-                    }
-
-
-                    return $html;
 
                 }
+
+            }
+            else{
+
+                // if (is_siteadmin() || $currentuserroleid == 4){
+
+                //             $html.='<label class="due-date badge m-1 badge-danger" id="due_'.$instanceid.'" style=" background-color: #F7882F;float:right;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+
+
+                // }
+
+
+                if($currentuserroleid == 5 ){
+
+                    // GET ASSIGNMENT GROUP INFO
+                    $sql_assigninfo='select * from {assign} where id= '.$instanceid;
+                    $arr_assigninfo=$DB->get_record_sql($sql_assigninfo);
+
+                    // CALL FUNCTION TO CHECK GROUP INFO
+                    $arrsubmit = $this->getGroupInfo($instanceid);
+
+
+                    if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted') {
+
+
+                        if ($arr_assigninfo->teamsubmission == 1) {
+                            $sql_groupids = 'select groupid from {groups_members} where userid= ' . $USER->id;
+                            $arr_groupids = $DB->get_records_sql($sql_groupids);
+
+                            $arr_groups = array();
+
+                            foreach ($arr_groupids as $key_groupids) {
+                                $arr_groups[] = $key_groupids->groupid;
+                            }
+
+                            $str_groupids = implode(",", $arr_groups);
+
+                            if ($str_groupids != "") {
+                                $sql_groupmembers = 'select userid from {groups_members} where groupid in (' . $str_groupids . ')';
+                                $arr_groupmembers = $DB->get_records_sql($sql_groupmembers);
+
+                                $arr_gmembers = array();
+
+                                foreach ($arr_groupmembers as $key_groupmembers) {
+                                    $arr_gmembers[] = $key_groupmembers->userid;
+                                }
+
+                                $str_gmembers = implode(",", $arr_gmembers);
+
+                                $sql_submit = 'select id,status,timemodified from {assign_submission} where userid in (' . $str_gmembers . ') and assignment= ' . $instanceid;
+                                $arr_submit = $DB->get_records_sql($sql_submit);
+
+                                $arrsubmit = new stdClass();
+                                foreach ($arr_submit as $key_submit) {
+                                    if ($key_submit->status == 'submitted') {
+                                        $arrsubmit->status = $key_submit->status;
+                                        $arrsubmit->timemodified = $key_submit->timemodified;
+                                        break;
+                                    } else {
+                                        $arrsubmit->status = $key_submit->status;
+                                        $arrsubmit->timemodified = $key_submit->timemodified;
+                                    }
+                                }
+                            }
+                        } else {
+                            if (!empty($gradeitemid)) {
+                                $sqlgrade = 'select finalgrade,feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
+                                $grade = $DB->get_record_sql($sqlgrade);
+                            }
+                        }
+
+                        $assignmentstatus = "";
+                        if ($isDuedateVisible) {
+                            $assignmentstatus .= '<label class="due-date badge m-1 " id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
+
+                            $assignmentstatus .= '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted ' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
+                        }
+
+                        if (!empty($gradeitemid)) {
+                            if (($grade->feedback != null || $grade->finalgrade != null) && $grade->hidden != 1) {
+
+                                if ($isDuedateVisible) {
+                                    $assignmentstatus .= '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
+                                }
+                            }
+                        }
+
+                        ## 8. Submit an assignment to an assignment where the due date has passed but the cut of date is in the future. (Should show as submitted, and the date it was submitted.)
+                        if($extngranted && $isDuedateVisible && ( ($extensionduedate < $arrsubmit->timemodified) ) && $cutoffdate > $currentdate  ){
+                            $assignmentstatus = '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted ' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
+                        }elseif($isDuedateVisible && ($timestamp < $arrsubmit->timemodified) && $cutoffdate > $currentdate  ){
+                            $assignmentstatus = '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted ' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
+                        }
+                        $html .= $assignmentstatus;
+                    }
+                    else if(isset($arrsubmit->status) && $arrsubmit->status == 'draft'){
+
+
+                        if($isDuedateVisible){
+                            $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+
+                            $html.='<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;"> Draft Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
+                        }
+
+                    }
+                    else{
+                        if($isDuedateVisible){
+
+                            if($extngranted && $extensionduedate > 0){
+                                $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="
+                                            border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$edate2.'</label>';
+                            }else{
+                                $html.='<label class="due-date badge m-1 " id="due_'.$instanceid.'" style="
+                                            border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+                            }
+                            
+                            //echo $instanceid . " # " . $extngranted . " / " . date("d m Y", $timestamp) . " // " . date("d m Y", $currentdate) . "<br/>";
+
+
+                            ///
+
+                            $assignmentstatus = "";
+                            if ($extngranted && $extensionduedate > 0 && ($timestamp>$cutoffdate || $timestamp>$extensionduedate)) {
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due</label>';
+                            }
+                            if (!$extngranted && $currentdate > $timestamp){
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                            }
+
+                            // welkin
+
+                            ## 2. Due date in the past and the cut off date set to the same as the due date (Assignment is labelled as 'Late' and is red. Date given is the due date.)
+                            if( $extngranted && $extensionduedate > 0 && ($currentdate > $extensionduedate) && ($extensionduedate == $cutoffdate) ){
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                            }elseif( ($currentdate > $timestamp) && ($timestamp == $cutoffdate) ){
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                            }
+
+                            ## 3. Due date is in the past and the cut of date is in the future (Assignment is labelled as 'Was Due' and is red. Date given is the due date.)
+                            if ($extngranted && $extensionduedate > 0 && ($extensionduedate < $currentdate) && ($cutoffdate>$currentdate) ) {
+                                
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Was Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Was Due</label>';  
+                                
+                            }elseif ($cutoffdate>$currentdate) {
+                                
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Was Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Was Due</label>';  
+                                
+                            }
+
+                            ## 4. Due date today and the cut of date is in the future (Assignment is labelled as 'Due Today' and is red. Date given is the due date.)
+                            if($extngranted && ( ($currentdate_date == $extensionduedate_date && $currentdate < $timestamp) ) && ($cutoffdate>$currentdate) ){
+                                $assignmentstatus = $assignmentduedate;
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
+                            }elseif( ($currentdate_date == $timestamp_date && $currentdate < $timestamp ) && ($cutoffdate>$currentdate) ){
+                                $assignmentstatus = $assignmentduedate;
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
+                            }
+
+                            ## 5. Due date is in the future and no cut of date (cut off date is disabled) - (No label. Due Date only shown.)
+                            if($extngranted && $extensionduedate > 0 && $cutoffdate == 0 && ($extensionduedate>$currentdate)){
+                                $assignmentstatus = $assignmentduedate;
+                            }elseif($cutoffdate == 0 && $timestamp>$currentdate){
+                                $assignmentstatus = $assignmentduedate; 
+                            }
+
+
+                            
+                            // $html3 = "date : ".$date." , date2 : ".$date2;
+
+                            // $assignmentstatus = '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today-'.$html3.'</label>';
+
+                            $html .= $assignmentstatus;
+                            ///
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+        else if($arrdue->duedate == 0){
+
+            if($currentuserroleid == 5 ){
+
+                $sqlsubmit='select status,timemodified from {assign_submission} where userid= '.$USER->id.' and assignment= '.$instanceid;
+                $arrsubmit=$DB->get_record_sql($sqlsubmit);
+
+                if( isset($arrsubmit->status) && $arrsubmit->status == 'submitted') {
+
+                    // $sqlgradeshow='select gradevisible from {block_assessment_information} where itemid= '.$cmid.' and mtable = "assign"';
+                    // $gradeshow=$DB->get_record_sql($sqlgradeshow);
+                    // if($gradeshow->gradevisible == 1){
+                    if (!empty($gradeitemid)) {
+                        $sqlgrade = 'select finalgrade,feedback,hidden from {grade_grades} where userid= ' . $USER->id . ' and itemid= ' . $gradeitemid;
+                        $grade = $DB->get_record_sql($sqlgrade);
+                    }
+                    // $grade=$exec->finalgrade;
+                    // }
+
+
+                    if ($isDuedateVisible) {
+                        $html .= '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
+                    }
+                    if (!empty($gradeitemid)) {
+                        if (($grade->finalgrade != null || $grade->feedback != null) && $grade->hidden != 1) {
+                            if ($isDuedateVisible) {
+                                $html .= '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
+                            }
+                        }
+                    }
+                }
+
+            }
+
+
+            // if (is_siteadmin() || $currentuserroleid == 4){
+
+            //      $sqlsubmitcount='select count(*) as count from {assign_submission} where assignment= '.$instanceid.' and status= "submitted"';
+            //         $arrsubcount=$DB->get_record_sql($sqlsubmitcount);
+            //         /*graded count*/
+
+            //         if($gradeitemid != ""){
+
+            //             //* graded count*/
+            //             $sqlgraded='select count(*) as count from {grade_grades} where finalgrade >= 0 and itemid= '.$gradeitemid;
+            //             $exec1=$DB->get_record_sql($sqlgraded);
+            //             $gradedcount=$exec1->count;
+
+
+            //         }
+
+            //         /*graded count*/
+            //         if($arrsubcount->count != ""){
+            //             $submitcount=$arrsubcount->count;
+
+            //             $html.='<label style="float:right;color:blue;font-size: smaller;">'.$submitcount.' of '.$total_users.' submitted</label><br>';
+            //             $html.='<label style="float:right;color:blue;font-size: smaller;">'.
+            //             ($gradedcount != 0 ?($submitcount-$gradedcount):'All').' Ungraded</label><br>';
+            //         }
+            // }
+        }
+
+
+        return $html;
+
+    }
     // ENDS
 
     public function get_resources_list($resources, $section){
