@@ -676,7 +676,6 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                 $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                             }
 
-                            // welkin
 
                             ## 2. Due date in the past and the cut off date set to the same as the due date (Assignment is labelled as 'Late' and is red. Date given is the due date.)
                             if( $extngranted && $extensionduedate > 0 && ($currentdate > $extensionduedate) && ($extensionduedate == $cutoffdate) ){
@@ -1968,7 +1967,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
     //This is a function copied from course renderer
     function get_activity_chooser_control($course, $section, $sectionreturn = null, $displayoptions = array()) {
-        global $CFG;
+        global $CFG,$USER;
 
 
         $vertical = !empty($displayoptions['inblock']);
@@ -1981,8 +1980,18 @@ class block_assessment_information_renderer extends plugin_renderer_base
         }
 
         // Retrieve all modules with associated metadata
-        $modules = get_module_metadata($course, $modnames, $sectionreturn);
-        $urlparams = array('section' => $section);
+        // $modules = get_module_metadata($course, $modnames, $sectionreturn);
+        // $urlparams = array('section' => $section);
+
+        
+        // Retrieve all modules with associated metadata.
+        $contentitemservice = \core_course\local\factory\content_item_service_factory::get_content_item_service();
+        $urlparams = ['section' => $section];
+        if (!is_null($sectionreturn)) {
+            $urlparams['sr'] = $sectionreturn;
+        }
+        $modules = $contentitemservice->get_content_items_for_user_in_course($USER, $course, $urlparams);
+       
 
         // We'll sort resources and activities into two lists
         $activities = array(MOD_CLASS_ACTIVITY => array(), MOD_CLASS_RESOURCE => array());
@@ -1993,7 +2002,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 // NOTE: this is legacy stuff, module subtypes are very strongly discouraged!!
                 $subtypes = array();
                 foreach ($module->types as $subtype) {
-                    $link = $subtype->link->out(true, $urlparams);
+                    // $link = $subtype->link->out(true, $urlparams);
+                    $link = $subtype->link;
                     $subtypes[$link] = $subtype->title;
                 }
 
@@ -2018,7 +2028,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
                     // System modules cannot be added by user, do not add to dropdown
                     continue;
                 }
-                $link = $module->link->out(true, $urlparams);
+                // $link = $module->link->out(true, $urlparams);
+                $link = $module->link;
                 $activities[$activityclass][$link] = $module->title;
             }
         }
@@ -2078,9 +2089,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 $modchooser = html_writer::tag('div', $modchooser, array('class' => 'hide addresourcemodchooser'));
             }
             $courserenderer = $this->page->get_renderer('core','course');
-            $output = $courserenderer->course_modchooser($modules, $course) . $modchooser . $output;
-//            $output = $courserenderer->course_activitychooser($course->id) . $modchooser . $output;
-
+            //$output = $courserenderer->course_modchooser($modules, $course) . $modchooser . $output;
+            $output = $courserenderer->course_activitychooser($course->id) . $modchooser . $output;
         }
 
         return $output;
