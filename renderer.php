@@ -73,7 +73,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
     private $coursepage;
     private $modinfo;
 
-    function block_content(&$content, $instanceid, $config, $assessment_information,$labelactivity_status=1){ //  (added labelactivity_status)
+    function block_content(&$content, $instanceid, $config, $assessment_information,$labelactivity_status=1){ // -- (added labelactivity_status)
 
         global $COURSE;
 
@@ -135,8 +135,10 @@ class block_assessment_information_renderer extends plugin_renderer_base
         } else {
             $resources = $assessment_information->get_course_resources('assessment');
         } 
-(start)
+
+        // -- (start)
         $html .= $this->get_resources_list($resources,'assessment',$labelactivity_status);
+        // -- (end)
 
         //$courserenderer = $this->page->get_renderer('core','course');
         $html .= $this->get_activity_chooser_control  ($COURSE,
@@ -671,7 +673,6 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                 $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                             }
 
-                            
 
                             ## 2. Due date in the past and the cut off date set to the same as the due date (Assignment is labelled as 'Late' and is red. Date given is the due date.)
                             if( ($currentdate > $timestamp) && ($timestamp == $cutoffdate) ){
@@ -785,7 +786,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
     }
     // ENDS
 
-    public function get_resources_list($resources, $section,$labelactivity_status=1){ (added $labelactivity_status)
+    public function get_resources_list($resources, $section,$labelactivity_status=1){ // -- (added $labelactivity_status)
         global $COURSE,$DB,$USER,$CFG,$PAGE;
 
         // config_enable_labelactivity
@@ -910,9 +911,11 @@ class block_assessment_information_renderer extends plugin_renderer_base
         foreach ($resources as $resource) {
             $cmid=$resource->itemid;//course module id
 
+            // -- (start)
             if($resource->mtable == 'label' && $labelactivity_status == 0){
                 continue;
             }
+            // -- (end)
 
             $aisectionno = 999;
             $sql_sectionno = "SELECT * FROM {course_modules} WHERE course=" . $COURSE->id . " AND id = " . $cmid;
@@ -1964,6 +1967,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
             return '';
         }
 
+        #### -- (start)
         // Retrieve all modules with associated metadata
         // $modules = get_module_metadata($course, $modnames, $sectionreturn);
         // $urlparams = array('section' => $section);
@@ -1977,6 +1981,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
         }
         $modules = $contentitemservice->get_content_items_for_user_in_course($USER, $course, $urlparams);
        
+        #### -- (end)
 
         // We'll sort resources and activities into two lists
         $activities = array(MOD_CLASS_ACTIVITY => array(), MOD_CLASS_RESOURCE => array());
@@ -1987,8 +1992,10 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 // NOTE: this is legacy stuff, module subtypes are very strongly discouraged!!
                 $subtypes = array();
                 foreach ($module->types as $subtype) {
+                    // -- (start)
                     // $link = $subtype->link->out(true, $urlparams);
                     $link = $subtype->link;
+                    // -- (end)
                     $subtypes[$link] = $subtype->title;
                 }
 
@@ -2013,8 +2020,10 @@ class block_assessment_information_renderer extends plugin_renderer_base
                     // System modules cannot be added by user, do not add to dropdown
                     continue;
                 }
+                // -- (start)
                 // $link = $module->link->out(true, $urlparams);
                 $link = $module->link;
+                // -- (end)
                 $activities[$activityclass][$link] = $module->title;
             }
         }
@@ -2074,8 +2083,10 @@ class block_assessment_information_renderer extends plugin_renderer_base
                 $modchooser = html_writer::tag('div', $modchooser, array('class' => 'hide addresourcemodchooser'));
             }
             $courserenderer = $this->page->get_renderer('core','course');
+            // -- (start)
             //$output = $courserenderer->course_modchooser($modules, $course) . $modchooser . $output;
             $output = $courserenderer->course_activitychooser($course->id) . $modchooser . $output;
+            // -- (end)
         }
 
         return $output;
@@ -2110,18 +2121,5 @@ class block_assessment_information_renderer extends plugin_renderer_base
         }
         $html .= html_writer::end_div();
         return $html;
-    }
-}erenderer = $PAGE->get_renderer('core','course');
-                $html .= $courserenderer->course_section_cm_list($course, $section, 0);
-            } else {
-                $html .= html_writer::tag('p',get_string('premixresourcesnotavailable','block_assessment_information',$course->fullname));
-            }
-            // $html .= $this->get_activity_chooser_control($course,TOPIC_ZERO_SECTION);
-            $html .= $this->get_activity_chooser_control($course,TOPIC_ZERO_SECTION1);
-        }
-        $html .= html_writer::end_div();
-        return $html;
-    }
-}turn $html;
     }
 }

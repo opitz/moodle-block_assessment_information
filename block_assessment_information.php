@@ -209,13 +209,13 @@ class block_assessment_information extends block_base
         );
     }
 
-	function has_config() {
+    function has_config() {
         return true;
     }
-	/**
-	 * get_content moodle internal function that is used to get the content of a block
-	 *
-	 */
+    /**
+     * get_content moodle internal function that is used to get the content of a block
+     *
+     */
     public function get_content()
     {
         global $CFG, $COURSE, $DB;
@@ -250,20 +250,21 @@ class block_assessment_information extends block_base
         $assessment_information = new assessment_information($COURSE->id,$this->page->theme->name);
 
 
-		// CHANGE ACTIVITY ADDED IN SECTION-52 TO STEALTH STARTS HERE
+        // CHANGE ACTIVITY ADDED IN SECTION-52 TO STEALTH STARTS HERE
         $cid = $COURSE->id;
         $sequence = isset($section->sequence) ? $section->sequence:"";
-	    if ($sequence!="") {
+        if ($sequence!="") {
             $sql_stealth = "UPDATE {course_modules} SET visible=1, visibleoncoursepage=0 WHERE id in (" . $sequence . ")";
 
             $DB->execute($sql_stealth);
 
             rebuild_course_cache($cid);
 
-	    }
+        }
 
         $this->content = new stdClass();
         
+        // -- (start)
         ## Global setting
         $config_assessment_information = get_config('block_assessment_information');
         $global_enablelabelactivity = 0;
@@ -273,7 +274,11 @@ class block_assessment_information extends block_base
         
 
         ## Course setting
-        $labelactivity_status = $this->config->enable_labelactivity;
+        $labelactivity_status = 0;
+        if(isset($this->config->enable_labelactivity)){
+            $labelactivity_status = $this->config->enable_labelactivity;
+        }
+        
         if($global_enablelabelactivity == 0){
             $labelactivity_status = 0;
         }
@@ -281,6 +286,7 @@ class block_assessment_information extends block_base
         $assessmentrenderer = $this->page->get_renderer('block_assessment_information');
         $assessmentrenderer->block_content($this->content, $this->instance->id, $this->config,
             $assessment_information,$labelactivity_status);
+        // -- (end)
         // $this->content .= "<input type='text' value='23' id='txt_nextsectionid'>";
         return $this->content;
     }
