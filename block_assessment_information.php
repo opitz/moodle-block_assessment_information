@@ -224,17 +224,17 @@ class block_assessment_information extends block_base
         if($this->content !== NULL) {
             return $this->content;
         }
-/*
+        /*
         // $section = $DB->get_record('course_sections', array('section'=>TOPIC_ZERO_SECTION, 'course'=>$COURSE->id));
         $section = $DB->get_record('course_sections', array('section'=>TOPIC_ZERO_SECTION2, 'course'=>$COURSE->id));
         if($section && $section->visible){
             require_once($CFG->dirroot . '/course/lib.php');
             course_update_section($section->course, $section, array('visible' => 0));
         }
-*/
+        */
 
         // make sure the related section for the block stays hidden
-//        $section = $DB->get_record('course_sections', array('section'=>TOPIC_ZERO_SECTION2, 'course'=>$COURSE->id));
+        //        $section = $DB->get_record('course_sections', array('section'=>TOPIC_ZERO_SECTION2, 'course'=>$COURSE->id));
         $sql_coursesection = "
             select section
             from {course_sections}
@@ -263,11 +263,24 @@ class block_assessment_information extends block_base
 	    }
 
         $this->content = new stdClass();
+        
+        ## Global setting
+        $config_assessment_information = get_config('block_assessment_information');
+        $global_enablelabelactivity = 0;
+        if(isset($config_assessment_information->enablelabelactivity)){
+            $global_enablelabelactivity = $config_assessment_information->enablelabelactivity;
+        }
+        
+
+        ## Course setting
+        $labelactivity_status = $this->config->enable_labelactivity;
+        if($global_enablelabelactivity == 0){
+            $labelactivity_status = 0;
+        }
 
         $assessmentrenderer = $this->page->get_renderer('block_assessment_information');
         $assessmentrenderer->block_content($this->content, $this->instance->id, $this->config,
-            $assessment_information);
-
+            $assessment_information,$labelactivity_status);
         // $this->content .= "<input type='text' value='23' id='txt_nextsectionid'>";
         return $this->content;
     }

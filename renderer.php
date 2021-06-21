@@ -73,7 +73,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
     private $coursepage;
     private $modinfo;
 
-    function block_content(&$content, $instanceid, $config, $assessment_information){
+    function block_content(&$content, $instanceid, $config, $assessment_information,$labelactivity_status=1){ //  (added labelactivity_status)
 
         global $COURSE;
 
@@ -135,7 +135,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
         } else {
             $resources = $assessment_information->get_course_resources('assessment');
         } 
-        $html .= $this->get_resources_list($resources,'assessment');
+(start)
+        $html .= $this->get_resources_list($resources,'assessment',$labelactivity_status);
 
         //$courserenderer = $this->page->get_renderer('core','course');
         $html .= $this->get_activity_chooser_control  ($COURSE,
@@ -380,9 +381,14 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                 if ($arrdue->cutoffdate>$arr_dateextn->extensionduedate) {
                     $cutoffdate = $arrdue->cutoffdate;
+                    
                 } else {
                     $extensionduedate = $arr_dateextn->extensionduedate;
                 }
+            }
+            if(isset($arr_dateextn->extensionduedate)){
+                $extngranted = true;
+                $extensionduedate = $arr_dateextn->extensionduedate;
             }
 
             //                        echo date("Y m d", $timestamp);
@@ -430,53 +436,44 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                 $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                             }
 
+                            ## 5. Due date is in the future and no cut of date (cut off date is disabled) - (No label. Due Date only shown.)
+                            if($cutoffdate == 0 && $timestamp>$currentdate){
+                                $assignmentstatus = $assignmentduedate; 
+                            }
+
                             ## 4. Due date today and the cut of date is in the future (Assignment is labelled as 'Due Today' and is red. Date given is the due date.)
-                            if($extngranted && ( ($currentdate_date == $extensionduedate_date) ) && ($cutoffdate>$currentdate) ){
-                                $assignmentstatus = $assignmentduedate;
-                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
-                            }elseif( ($currentdate_date == $timestamp_date) && ($cutoffdate>$currentdate) ){
+                            if( ($currentdate_date == $timestamp_date) && ($cutoffdate>$currentdate) ){
                                 $assignmentstatus = $assignmentduedate;
                                 $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
                             }
 
                             ## 6. Due date is in the future and the cut of date is the same as the due date (No label. Due Date only shown.)
-                            if ($extngranted && ($currentdate < $extensionduedate) && ($extensionduedate == $cutoffdate) ) {
-                                $assignmentstatus = $assignmentduedate;
-                            }elseif ( ($currentdate < $timestamp) && ($timestamp== $cutoffdate) ) {
+                            if ( ($currentdate < $timestamp) && ($timestamp== $cutoffdate) ) {
                                 $assignmentstatus = $assignmentduedate;
                             }
 
                             ## 7. Due date is in the future and the cut of date is further in the future than the due date (No label. Due Date only shown.)
-                            if( $extngranted && $cutoffdate > 0 && ($extensionduedate >$currentdate) && ($cutoffdate > $extensionduedate) ){
-                                $assignmentstatus = $assignmentduedate;
-                            }elseif( $cutoffdate > 0 && ($timestamp >$currentdate) && ($cutoffdate > $timestamp) ){
+                            if( $cutoffdate > 0 && ($timestamp >$currentdate) && ($cutoffdate > $timestamp) ){
                                 $assignmentstatus = $assignmentduedate;
                             }
 
                             ## 12. Due date is tomorrow and cut off in the future (Assignment is labelled as 'Due Soon' and is yellow. Date given is the due date.)
-                            if($extngranted && $tomorrowdate == $extensionduedate_date && $cutoffdate>$extensionduedate){
+                            if($tomorrowdate == $timestamp_date && $cutoffdate>$timestamp){
+
                                 $assignmentstatus = $assignmentduedate;
                                 $assignmentstatus .= '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due Soon" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Soon</label>';
-                            }elseif($tomorrowdate == $timestamp_date && $cutoffdate>$timestamp){
+                            }elseif($tomorrowdate == $timestamp_date){
                                 $assignmentstatus = $assignmentduedate;
                                 $assignmentstatus .= '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due Soon" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Soon</label>';
                             }
 
                             ## 4. Due date today and the cut of date is in the future (Assignment is labelled as 'Due Today' and is red. Date given is the due date.)
-                            if($extngranted && ( ($currentdate_date == $extensionduedate_date && $currentdate < $timestamp) ) && ($cutoffdate>$currentdate) ){
-                                $assignmentstatus = $assignmentduedate;
-                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
-                            }elseif( ($currentdate_date == $timestamp_date && $currentdate < $timestamp ) && ($cutoffdate>$currentdate) ){
+                            // ($currentdate_date == $timestamp_date && $currentdate < $timestamp )
+                            if( ($currentdate_date == $timestamp_date ) && ($cutoffdate>$currentdate) ){
                                 $assignmentstatus = $assignmentduedate;
                                 $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
                             }
 
-                            ## 5. Due date is in the future and no cut of date (cut off date is disabled) - (No label. Due Date only shown.)
-                            if($extngranted && $extensionduedate > 0 && $cutoffdate == 0 && ($extensionduedate>$currentdate)){
-                                $assignmentstatus = $assignmentduedate;
-                            }elseif($cutoffdate == 0 && $timestamp>$currentdate){
-                                $assignmentstatus = $assignmentduedate; 
-                            }
                             $html .= $assignmentstatus;
 
                         }
@@ -620,24 +617,22 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                         $assignmentstatus = "";
                         if ($isDuedateVisible) {
-                            $assignmentstatus .= '<label class="due-date badge m-1 " id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
+                            $assignmentstatus = '<label class="due-date badge m-1 " id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due ' . $date . '</label>';
 
-                            $assignmentstatus .= '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted ' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
+                            $assignmentstatus = '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted ' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
                         }
 
                         if (!empty($gradeitemid)) {
                             if (($grade->feedback != null || $grade->finalgrade != null) && $grade->hidden != 1) {
 
                                 if ($isDuedateVisible) {
-                                    $assignmentstatus .= '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
+                                    $assignmentstatus = '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
                                 }
                             }
                         }
 
                         ## 8. Submit an assignment to an assignment where the due date has passed but the cut of date is in the future. (Should show as submitted, and the date it was submitted.)
-                        if($extngranted && $isDuedateVisible && ( ($extensionduedate < $arrsubmit->timemodified) ) && $cutoffdate > $currentdate  ){
-                            $assignmentstatus = '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted ' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
-                        }elseif($isDuedateVisible && ($timestamp < $arrsubmit->timemodified) && $cutoffdate > $currentdate  ){
+                        if($isDuedateVisible && ($timestamp < $arrsubmit->timemodified) && $cutoffdate > $currentdate  ){
                             $assignmentstatus = '<label class="due-date badge m-1 " style="border:1px solid #ddd;border-radius: .25rem;padding:5px;margin-right:5px;color:black;">Submitted ' . date("d-m-Y H:i:s", $arrsubmit->timemodified) . '</label>';
                         }
                         $html .= $assignmentstatus;
@@ -676,42 +671,37 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                 $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                             }
 
+                            
 
                             ## 2. Due date in the past and the cut off date set to the same as the due date (Assignment is labelled as 'Late' and is red. Date given is the due date.)
-                            if( $extngranted && $extensionduedate > 0 && ($currentdate > $extensionduedate) && ($extensionduedate == $cutoffdate) ){
-                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
-                            }elseif( ($currentdate > $timestamp) && ($timestamp == $cutoffdate) ){
+                            if( ($currentdate > $timestamp) && ($timestamp == $cutoffdate) ){
                                 $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                             }
 
                             ## 3. Due date is in the past and the cut of date is in the future (Assignment is labelled as 'Was Due' and is red. Date given is the due date.)
-                            if ($extngranted && $extensionduedate > 0 && ($extensionduedate < $currentdate) && ($cutoffdate>$currentdate) ) {
-                                
-                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Was Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Was Due</label>';  
-                                
-                            }elseif ($cutoffdate>$currentdate) {
+                            if ($cutoffdate>$currentdate) {
                                 
                                 $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Was Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Was Due</label>';  
                                 
                             }
 
                             ## 4. Due date today and the cut of date is in the future (Assignment is labelled as 'Due Today' and is red. Date given is the due date.)
-                            if($extngranted && ( ($currentdate_date == $extensionduedate_date && $currentdate < $timestamp) ) && ($cutoffdate>$currentdate) ){
-                                $assignmentstatus = $assignmentduedate;
-                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
-                            }elseif( ($currentdate_date == $timestamp_date && $currentdate < $timestamp ) && ($cutoffdate>$currentdate) ){
+                            // ($currentdate_date == $timestamp_date && $currentdate < $timestamp ) && ($cutoffdate>$currentdate)
+                            if( ($currentdate_date == $timestamp_date  ) && ($cutoffdate>$currentdate) ){
                                 $assignmentstatus = $assignmentduedate;
                                 $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
                             }
 
                             ## 5. Due date is in the future and no cut of date (cut off date is disabled) - (No label. Due Date only shown.)
-                            if($extngranted && $extensionduedate > 0 && $cutoffdate == 0 && ($extensionduedate>$currentdate)){
-                                $assignmentstatus = $assignmentduedate;
-                            }elseif($cutoffdate == 0 && $timestamp>$currentdate){
+                            if($cutoffdate == 0 && $timestamp>$currentdate){
                                 $assignmentstatus = $assignmentduedate; 
                             }
 
-
+                            ## 10. Student who has been granted an extension logs in
+                            if($extngranted && $extensionduedate > 0 && $extensionduedate<$currentdate){
+                                $assignmentstatus = $assignmentduedate;
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Was Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Was Due</label>';  
+                            }
                             
                             // $html3 = "date : ".$date." , date2 : ".$date2;
 
@@ -795,9 +785,10 @@ class block_assessment_information_renderer extends plugin_renderer_base
     }
     // ENDS
 
-    public function get_resources_list($resources, $section){
+    public function get_resources_list($resources, $section,$labelactivity_status=1){ (added $labelactivity_status)
         global $COURSE,$DB,$USER,$CFG,$PAGE;
 
+        // config_enable_labelactivity
 
         $html = '<input type="hidden" class="txt_nextsectionid" value="'.TOPIC_ZERO_SECTION1.'">';
         //$count++;
@@ -826,30 +817,27 @@ class block_assessment_information_renderer extends plugin_renderer_base
             }
 
             $ai_section_title = get_string('ai_section_title','block_assessment_information');
-//            $sql='update {course_sections} set section='.$nextsection.',name='.$ai_section_title.' where section= '.TOPIC_ZERO_SECTION1.' and course = '.$COURSE->id;
+            //            $sql='update {course_sections} set section='.$nextsection.',name='.$ai_section_title.' where section= '.TOPIC_ZERO_SECTION1.' and course = '.$COURSE->id;
             $sql="update {course_sections} set section=$nextsection,name=$ai_section_title where section= TOPIC_ZERO_SECTION1 and course = $COURSE->id";
             $result=$DB->execute($sql);
             rebuild_course_cache($COURSE->id, true);
         }
+        ?>
 
 
+        <script
+        src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
 
-            ?>
-
-
-                        <script
-  src="https://code.jquery.com/jquery-3.3.1.min.js"
-  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-  crossorigin="anonymous"></script>
-
-  <style type="text/css">
-      .dimmedRes a{
+        <style type="text/css">
+        .dimmedRes a{
             opacity: 0.7;
-      }
-      .dimmedRes:hover{
-        cursor: default !important;
-      }
-  </style>
+        } 
+        .dimmedRes:hover{
+            cursor: default !important;
+        }
+        </style>
                        <script type="text/javascript">
                            jQuery(document).ready(function($){
 
@@ -918,45 +906,48 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
 
                        //functions end
-            $count = 0;
-    foreach ($resources as $resource) {
-         $cmid=$resource->itemid;//course module id
+        $count = 0;
+        foreach ($resources as $resource) {
+            $cmid=$resource->itemid;//course module id
+
+            if($resource->mtable == 'label' && $labelactivity_status == 0){
+                continue;
+            }
+
+            $aisectionno = 999;
+            $sql_sectionno = "SELECT * FROM {course_modules} WHERE course=" . $COURSE->id . " AND id = " . $cmid;
+
+            if ($arr_sectionno = $DB->get_record_sql($sql_sectionno)) {
+                $sectionno = $arr_sectionno->section;
+            }
 
 
-        $aisectionno = 999;
-        $sql_sectionno = "SELECT * FROM {course_modules} WHERE course=" . $COURSE->id . " AND id = " . $cmid;
+            // $sql_aisectionno = "SELECT * FROM {course_sections} WHERE course=" . $COURSE->id . " AND name = 'Generated by Assessment Information block2'";
 
-        if ($arr_sectionno = $DB->get_record_sql($sql_sectionno)) {
-            $sectionno = $arr_sectionno->section;
-        }
+            // if ($arr_aisectionno = $DB->get_record_sql($sql_aisectionno)) {
+            //     $aisectionno = $arr_aisectionno->id;
+            // }
 
+            $sql = "
+                select * 
+                from {course_sections} 
+                where course =".$COURSE->id." 
+                and (sequence = '666' or sequence like '666,%' or sequence like '%,666,%' or sequence like '%,666')";
+            $result = $DB->get_records_sql($sql);
+            $aisectionno = course_get_format($COURSE)->get_last_section_number();
+            foreach($result as $res){
+                $aisectionno = $res->id;
+            }
+            $courseresources = new assessment_information($COURSE->id,"");
 
-        // $sql_aisectionno = "SELECT * FROM {course_sections} WHERE course=" . $COURSE->id . " AND name = 'Generated by Assessment Information block2'";
-
-        // if ($arr_aisectionno = $DB->get_record_sql($sql_aisectionno)) {
-        //     $aisectionno = $arr_aisectionno->id;
-        // }
-
-        $sql = "
-            select * 
-            from {course_sections} 
-            where course =".$COURSE->id." 
-            and (sequence = '666' or sequence like '666,%' or sequence like '%,666,%' or sequence like '%,666')";
-        $result = $DB->get_records_sql($sql);
-        $aisectionno = course_get_format($COURSE)->get_last_section_number();
-        foreach($result as $res){
-            $aisectionno = $res->id;
-        }
-        $courseresources = new assessment_information($COURSE->id,"");
-
-        $course_assignment_tables = $courseresources->assignment_tables;
+            $course_assignment_tables = $courseresources->assignment_tables;
 
 
 
-        $sql='select *  from {course_modules} where id='.$cmid;
-        $deletion=$DB->get_record_sql($sql);
+            $sql='select *  from {course_modules} where id='.$cmid;
+            $deletion=$DB->get_record_sql($sql);
 
-        // check if that activity is hidden from course
+            // check if that activity is hidden from course
 
             if(isset ($deletion) && $deletion->visible != ""){
                 $resource->visible = $deletion->visible;
@@ -968,36 +959,36 @@ class block_assessment_information_renderer extends plugin_renderer_base
             }
 
 
-        if(isset($deletion) && $deletion->deletioninprogress != 1 ){
-                    $userarr = array();
-                    if(count($arr_users) > 0 ){
-                        foreach ($arr_users as $key => $obj) {
-                            # code...
-                            if($obj->id == $cmid){
-                                array_push($userarr,$obj->userid);
-                            }
+            if(isset($deletion) && $deletion->deletioninprogress != 1 ){
+                $userarr = array();
+                if(count($arr_users) > 0 ){
+                    foreach ($arr_users as $key => $obj) {
+                        # code...
+                        if($obj->id == $cmid){
+                            array_push($userarr,$obj->userid);
                         }
                     }
+                }
 
 
-            if(!array_key_exists($resource->itemid, $this->modinfo->cms)) {
-                continue;
-            }
-            $visibleclass = $resource->visible ? ' hide-link' : ' show-link';
+                if(!array_key_exists($resource->itemid, $this->modinfo->cms)) {
+                    continue;
+                }
+                $visibleclass = $resource->visible ? ' hide-link' : ' show-link';
 
-            if (($sectionno == $aisectionno) || in_array($resource->mtable, $course_assignment_tables)) {
+                if (($sectionno == $aisectionno) || in_array($resource->mtable, $course_assignment_tables)) {
 
-            } else {
-                $visibleclass .= ' no-link';
-            }
+                } else {
+                    $visibleclass .= ' no-link';
+                }
 
-            $html .= html_writer::start_div('resource clearfix'.$visibleclass);
-            if($this->coursepage->user_is_editing()){
+                $html .= html_writer::start_div('resource clearfix'.$visibleclass);
+                if($this->coursepage->user_is_editing()){
 
                     $moveicon = html_writer::empty_tag('img',
-                        array('src' => $this->image_url('t/move')->out(false),
-                            'alt' => 'move',
-                            'title' => get_string('move')));
+                            array('src' => $this->image_url('t/move')->out(false),
+                                'alt' => 'move',
+                                'title' => get_string('move')));
                     $moveurl = new moodle_url($this->page->url, array(
                         'moveresource' => 1, 'itemid' => $resource->id
                     ));
@@ -1005,77 +996,75 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                     $html .= html_writer::tag('div', $moveurl, array('class' => 'move'));
 
-            }
-            $mod = $this->modinfo->cms[$resource->itemid];
-
-            $resource_link  = html_writer::link(
-                new moodle_url($resource->url),
-                $mod->get_formatted_name()
-            );
-
-            $course_moduleid = $resource->itemid;
-
-            if ($resource->mtable=="label") {
-                $sql_fetchinstanceid = "SELECT instance FROM {course_modules} WHERE id=" . $resource->itemid;
-                $arr_fetchinstanceid = $DB->get_record_sql($sql_fetchinstanceid);
-                $labelinstanceid = $arr_fetchinstanceid->instance;
-
-                if ($labelinstanceid>=1) {
-                    $sql_fetchintro = "SELECT intro FROM {label} WHERE id=" . $labelinstanceid;
-
-                    $arr_fetchintro = $DB->get_record_sql($sql_fetchintro);
-                    $labelintro = $arr_fetchintro->intro;
-                    $labelmodText = preg_replace('~<p[^>]*>~', '', $labelintro);
                 }
-            } else {
-                $labelmodText = "";
-            }
+                $mod = $this->modinfo->cms[$resource->itemid];
 
+                $resource_link  = html_writer::link(
+                    new moodle_url($resource->url),
+                    $mod->get_formatted_name()
+                );
 
-            ## Get course access
-            $modinfo = get_fast_modinfo($COURSE);
-            $cm = $modinfo->get_cm($course_moduleid);
-            // $cm = $modinfo->cms[$course_moduleid];
+                $course_moduleid = $resource->itemid;
 
-            $dimmedClass = "";
+                if ($resource->mtable=="label") {
+                    $sql_fetchinstanceid = "SELECT instance FROM {course_modules} WHERE id=" . $resource->itemid;
+                    $arr_fetchinstanceid = $DB->get_record_sql($sql_fetchinstanceid);
+                    $labelinstanceid = $arr_fetchinstanceid->instance;
 
+                    if ($labelinstanceid>=1) {
+                        $sql_fetchintro = "SELECT intro FROM {label} WHERE id=" . $labelinstanceid;
 
-            if (empty($cm->uservisible)) {
-                $dimmedClass = "dimmedRes";
-                if (!is_siteadmin()) {
-                    $resource_link = strip_tags($resource_link);
+                        $arr_fetchintro = $DB->get_record_sql($sql_fetchintro);
+                        $labelintro = $arr_fetchintro->intro;
+                        $labelmodText = preg_replace('~<p[^>]*>~', '', $labelintro);
+                    }
+                } else {
+                    $labelmodText = "";
                 }
-            }else{
-
-                $info = new \core_availability\info_module($mod);
-                $conditionalhidden = !$info->is_available_for_all();
 
 
+                ## Get course access
+                $modinfo = get_fast_modinfo($COURSE);
+                $cm = $modinfo->get_cm($course_moduleid);
+                // $cm = $modinfo->cms[$course_moduleid];
 
-                if(is_siteadmin()){
-                    if ($conditionalhidden) {
+                $dimmedClass = "";
 
-                        $dimmedClass = "dimmedRes";
-                        if (!is_siteadmin()) {
-                            $resource_link = strip_tags($resource_link);
-                        }
+
+                if (empty($cm->uservisible)) {
+                    $dimmedClass = "dimmedRes";
+                    if (!is_siteadmin()) {
+                        $resource_link = strip_tags($resource_link);
                     }
                 }else{
-                    if(!empty($cm->available) && $cm->available == 1){
-                        $dimmedClass = "";
+
+                    $info = new \core_availability\info_module($mod);
+                    $conditionalhidden = !$info->is_available_for_all();
+
+                    if(is_siteadmin()){
+                        if ($conditionalhidden) {
+
+                            $dimmedClass = "dimmedRes";
+                            if (!is_siteadmin()) {
+                                $resource_link = strip_tags($resource_link);
+                            }
+                        }
                     }else{
-                        $dimmedClass = "dimmedRes";
-                        if (!is_siteadmin()) {
-                            $resource_link = strip_tags($resource_link);
+                        if(!empty($cm->available) && $cm->available == 1){
+                            $dimmedClass = "";
+                        }else{
+                            $dimmedClass = "dimmedRes";
+                            if (!is_siteadmin()) {
+                                $resource_link = strip_tags($resource_link);
+                            }
                         }
                     }
+
+
                 }
 
-
-            }
-
-            if( !is_siteadmin() &&  $deletion->groupingid != 0 ){
-                // echo 'first';
+                if( !is_siteadmin() &&  $deletion->groupingid != 0 ){
+                    // echo 'first';
 
                     //==
                     if($dimmedClass == ''){
@@ -1099,66 +1088,62 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                     //==
 
-            }
-            else if(is_siteadmin() || ($deletion->groupingid == 0  && count($userarr) == 0)){
-                // echo 'second'."<br>";
-                //==
-                if(is_siteadmin()){
-                    if($labelmodText != ''){    // Label mod
+                }
+                else if(is_siteadmin() || ($deletion->groupingid == 0  && count($userarr) == 0)){
 
-                        $html .= html_writer::tag('li', $labelmodText, array(
-                            'id'=>$resource->id,
-                            'style'=>'background:url('.$mod->get_icon_url().') no-repeat;',
-                                'class' =>$dimmedClass
-                        ));
+                    
+                    // echo 'second'."<br>";
+                    //==
+                    if(is_siteadmin()){
+                        if($labelmodText != ''){    // Label mod
 
-                    }else{
-                            $html .= html_writer::tag('li', $resource_link, array(
-                                'id' => $resource->id,
-                                'style' => 'background:url(' . $mod->get_icon_url() . ') no-repeat;',
-                                'class' => $dimmedClass
-                            ));
-                    }
-                } else {
-                    if($dimmedClass == '') {
-                        if ($labelmodText != '') {    // Label mod
                             $html .= html_writer::tag('li', $labelmodText, array(
-                                'id' => $resource->id,
-                                'style' => 'background:url(' . $mod->get_icon_url() . ') no-repeat;',
-                                'class' => $dimmedClass
-                            ));
-                        } else {
-
-                            $html .= html_writer::tag('li', $resource_link, array(
-                                'id' => $resource->id,
-                                'style' => 'background:url(' . $mod->get_icon_url() . ') no-repeat;',
-                                'class' => $dimmedClass
+                                'id'=>$resource->id,
+                                'style'=>'background:url('.$mod->get_icon_url().') no-repeat;',
+                                    'class' =>$dimmedClass
                             ));
 
+                        }else{
+                                $html .= html_writer::tag('li', $resource_link, array(
+                                    'id' => $resource->id,
+                                    'style' => 'background:url(' . $mod->get_icon_url() . ') no-repeat;',
+                                    'class' => $dimmedClass
+                                ));
+                        }
+                    } else {
+                        if($dimmedClass == '') {
+                            if ($labelmodText != '') {    // Label mod
+                                $html .= html_writer::tag('li', $labelmodText, array(
+                                    'id' => $resource->id,
+                                    'style' => 'background:url(' . $mod->get_icon_url() . ') no-repeat;',
+                                    'class' => $dimmedClass
+                                ));
+                            } else {
+
+                                $html .= html_writer::tag('li', $resource_link, array(
+                                    'id' => $resource->id,
+                                    'style' => 'background:url(' . $mod->get_icon_url() . ') no-repeat;',
+                                    'class' => $dimmedClass
+                                ));
+
+                            }
                         }
                     }
+                    //==
+
                 }
-                //==
 
-            }
-
-
-
-
-
-
-
-            if($this->coursepage->user_is_editing()){
-                $toggleclass = $resource->visible ? 'hide' : 'show';
-                    $html .= html_writer::link(
-                        '#', ucfirst($toggleclass), array(
-                            'title' => ucfirst($toggleclass) . ' Link',
-                            'class' => 'remove-link',
-                            'data-id' => $resource->id,
-                            'data-state' => $resource->visible
-                        )
-                    );
-            }
+                if($this->coursepage->user_is_editing()){
+                    $toggleclass = $resource->visible ? 'hide' : 'show';
+                        $html .= html_writer::link(
+                            '#', ucfirst($toggleclass), array(
+                                'title' => ucfirst($toggleclass) . ' Link',
+                                'class' => 'remove-link',
+                                'data-id' => $resource->id,
+                                'data-state' => $resource->visible
+                            )
+                        );
+                }
 
 
 
@@ -2125,5 +2110,18 @@ class block_assessment_information_renderer extends plugin_renderer_base
         }
         $html .= html_writer::end_div();
         return $html;
+    }
+}erenderer = $PAGE->get_renderer('core','course');
+                $html .= $courserenderer->course_section_cm_list($course, $section, 0);
+            } else {
+                $html .= html_writer::tag('p',get_string('premixresourcesnotavailable','block_assessment_information',$course->fullname));
+            }
+            // $html .= $this->get_activity_chooser_control($course,TOPIC_ZERO_SECTION);
+            $html .= $this->get_activity_chooser_control($course,TOPIC_ZERO_SECTION1);
+        }
+        $html .= html_writer::end_div();
+        return $html;
+    }
+}turn $html;
     }
 }
