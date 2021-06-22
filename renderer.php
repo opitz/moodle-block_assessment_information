@@ -388,6 +388,9 @@ class block_assessment_information_renderer extends plugin_renderer_base
                     $extensionduedate = $arr_dateextn->extensionduedate;
                 }
             }
+            if(isset($arrdue->cutoffdate)){
+                $cutoffdate = $arrdue->cutoffdate;
+            }
             if(isset($arr_dateextn->extensionduedate)){
                 $extngranted = true;
                 $extensionduedate = $arr_dateextn->extensionduedate;
@@ -673,6 +676,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                                 $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                             }
 
+                           
 
                             ## 2. Due date in the past and the cut off date set to the same as the due date (Assignment is labelled as 'Late' and is red. Date given is the due date.)
                             if( ($currentdate > $timestamp) && ($timestamp == $cutoffdate) ){
@@ -680,7 +684,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                             }
 
                             ## 3. Due date is in the past and the cut of date is in the future (Assignment is labelled as 'Was Due' and is red. Date given is the due date.)
-                            if ($cutoffdate>$currentdate) {
+                            if ($timestamp < $currentdate && $cutoffdate>$currentdate) {
                                 
                                 $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Was Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Was Due</label>';  
                                 
