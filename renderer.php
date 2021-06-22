@@ -799,13 +799,21 @@ class block_assessment_information_renderer extends plugin_renderer_base
     }
     // ENDS
 
-    public function get_resources_list($resources, $section,$labelactivity_status=1){ // -- (added $labelactivity_status)
+    public function get_resources_list($resources, $section,$labelactivity_status=0){ // -- (added $labelactivity_status)
         global $COURSE,$DB,$USER,$CFG,$PAGE;
 
         // config_enable_labelactivity
         
         $html = '<input type="hidden" class="txt_nextsectionid" value="'.TOPIC_ZERO_SECTION1.'">';
         //$count++;
+
+        // -- Add hide class (start)
+       
+        $hidelabelclass = "";
+        if($labelactivity_status ==0){
+            $hidelabelclass = "d-none";
+        }
+        // -- Add hide class (end)
 
         // $html = "";
         // $PAGE->requires->jquery();
@@ -1348,10 +1356,10 @@ class block_assessment_information_renderer extends plugin_renderer_base
                              $arrsubmit=$DB->get_record_sql($sqlsubmit);
 
                             if( !isset($arrsubmit->state) || $arrsubmit->state == 'inprogress'){
-
+                                
                                 if($isDuedateVisible){
                                 $html.='<label class="due-date badge m-1" data-toggle="tooltip" title ="Overdue" id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
-                                $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                                $html.='<label class="due-date badge m-1 badge-danger '.$hidelabelclass.'" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                                 }
 
                             }
