@@ -166,8 +166,9 @@ class block_assessment_information_renderer extends plugin_renderer_base
         } else {
             $resources = $assessment_information->get_course_resources('assignment');
         }
-        $html .= $this->get_resources_list($resources,'assignment');
-
+        // -- (start)
+        $html .= $this->get_resources_list($resources,'assignment',$labelactivity_status);
+        // -- (end)
         //subheadings start
         if(isset($config->subheadings_title) && $config->subheadings_title){
             $html .= $this->get_assignment_subheadings($assessment_information, $this, $config);
@@ -353,7 +354,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
     }
 
 
-   public function renderAssign($instanceid,$currentuserroleid,$cmid,$html){
+   public function renderAssign($instanceid,$currentuserroleid,$cmid,$html,$labelactivity_status=0){ // --
         global $DB,$COURSE,$USER,$CFG;
 
         $isDuedateVisible = $this->checkAssignmentConditions($cmid);
@@ -366,6 +367,14 @@ class block_assessment_information_renderer extends plugin_renderer_base
         if ($execid) {
             $gradeitemid = $execid->id;
         }
+
+        // -- Add hide class (start)
+       
+        $hidelabelclass = "";
+        if($labelactivity_status ==0){
+            $hidelabelclass = "d-none";
+        }
+        // -- Add hide class (end)
 
         $extngranted = false;
 
@@ -435,10 +444,10 @@ class block_assessment_information_renderer extends plugin_renderer_base
                             }
 
                             if ($extngranted && $timestamp>$currentdate) {
-                                $assignmentstatus = '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due</label>';
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-warning '.$hidelabelclass.'" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due</label>';
                             }
                             if (!$extngranted && $currentdate>$timestamp){
-                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger '.$hidelabelclass.'" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                             }
 
                             ## 5. Due date is in the future and no cut of date (cut off date is disabled) - (No label. Due Date only shown.)
@@ -449,7 +458,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                             ## 4. Due date today and the cut of date is in the future (Assignment is labelled as 'Due Today' and is red. Date given is the due date.)
                             if( ($currentdate_date == $timestamp_date) && ($cutoffdate>$currentdate) ){
                                 $assignmentstatus = $assignmentduedate;
-                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger '.$hidelabelclass.'" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
                             }
 
                             ## 6. Due date is in the future and the cut of date is the same as the due date (No label. Due Date only shown.)
@@ -466,17 +475,17 @@ class block_assessment_information_renderer extends plugin_renderer_base
                             if($tomorrowdate == $timestamp_date && $cutoffdate>$timestamp){
 
                                 $assignmentstatus = $assignmentduedate;
-                                $assignmentstatus .= '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due Soon" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Soon</label>';
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-warning '.$hidelabelclass.'" data-toggle="tooltip" title ="Due Soon" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Soon</label>';
                             }elseif($tomorrowdate == $timestamp_date){
                                 $assignmentstatus = $assignmentduedate;
-                                $assignmentstatus .= '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due Soon" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Soon</label>';
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-warning '.$hidelabelclass.'" data-toggle="tooltip" title ="Due Soon" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Soon</label>';
                             }
 
                             ## 4. Due date today and the cut of date is in the future (Assignment is labelled as 'Due Today' and is red. Date given is the due date.)
                             // ($currentdate_date == $timestamp_date && $currentdate < $timestamp )
                             if( ($currentdate_date == $timestamp_date ) && ($cutoffdate>$currentdate) ){
                                 $assignmentstatus = $assignmentduedate;
-                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger '.$hidelabelclass.'" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
                             }
 
                             $html .= $assignmentstatus;
@@ -521,7 +530,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
 
                             if ($isDuedateVisible) {
-                                $html .= '<label class="due-date badge m-1 badge-danger" style="border-radius: .25rem;padding:5px;margin-right:5px;">' . $timestring . ' Late </label>';
+                                $html .= '<label class="due-date badge m-1 badge-danger '.$hidelabelclass.'" style="border-radius: .25rem;padding:5px;margin-right:5px;">' . $timestring . ' Late </label>';
                             }
 
                         }
@@ -542,7 +551,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                             $html.='<label class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;border:1px solid #ddd;">Draft Submitted '.date("d-m-Y H:i:s",$arrsubmit->timemodified).'</label>';
 
-                            $html.='<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                            $html.='<label class="due-date badge m-1 badge-danger '.$hidelabelclass.'" data-toggle="tooltip" title ="Late" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                         }
 
 
@@ -670,23 +679,23 @@ class block_assessment_information_renderer extends plugin_renderer_base
 
                             $assignmentstatus = "";
                             if ($extngranted && $extensionduedate > 0 && ($timestamp>$cutoffdate || $timestamp>$extensionduedate)) {
-                                $assignmentstatus = '<label class="due-date badge m-1 badge-warning" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due</label>';
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-warning '.$hidelabelclass.'" data-toggle="tooltip" title ="Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due</label>';
                             }
                             if (!$extngranted && $currentdate > $timestamp){
-                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger '.$hidelabelclass.'" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                             }
 
                            
 
                             ## 2. Due date in the past and the cut off date set to the same as the due date (Assignment is labelled as 'Late' and is red. Date given is the due date.)
                             if( ($currentdate > $timestamp) && ($timestamp == $cutoffdate) ){
-                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger '.$hidelabelclass.'" data-toggle="tooltip" title ="Late" id="due_' . $instanceid . '" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                             }
 
                             ## 3. Due date is in the past and the cut of date is in the future (Assignment is labelled as 'Was Due' and is red. Date given is the due date.)
                             if ($timestamp < $currentdate && $cutoffdate>$currentdate) {
                                 
-                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Was Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Was Due</label>';  
+                                $assignmentstatus = '<label class="due-date badge m-1 badge-danger '.$hidelabelclass.'" data-toggle="tooltip" title ="Was Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Was Due</label>';  
                                 
                             }
 
@@ -694,7 +703,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                             // ($currentdate_date == $timestamp_date && $currentdate < $timestamp ) && ($cutoffdate>$currentdate)
                             if( ($currentdate_date == $timestamp_date  ) && ($cutoffdate>$currentdate) ){
                                 $assignmentstatus = $assignmentduedate;
-                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger '.$hidelabelclass.'" data-toggle="tooltip" title ="Due Today" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Due Today</label>';
                             }
 
                             ## 5. Due date is in the future and no cut of date (cut off date is disabled) - (No label. Due Date only shown.)
@@ -705,7 +714,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                             ## 10. Student who has been granted an extension logs in
                             if($extngranted && $extensionduedate > 0 && $extensionduedate<$currentdate){
                                 $assignmentstatus = $assignmentduedate;
-                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger" data-toggle="tooltip" title ="Was Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Was Due</label>';  
+                                $assignmentstatus .= '<label class="due-date badge m-1 badge-danger '.$hidelabelclass.'" data-toggle="tooltip" title ="Was Due" id="due_' . $instanceid . '" style="border:1px solid #ddd;color:#fff;border-radius: .25rem;padding:5px">Was Due</label>';  
                             }
                             
                             // $html3 = "date : ".$date." , date2 : ".$date2;
@@ -794,7 +803,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
         global $COURSE,$DB,$USER,$CFG,$PAGE;
 
         // config_enable_labelactivity
-
+        
         $html = '<input type="hidden" class="txt_nextsectionid" value="'.TOPIC_ZERO_SECTION1.'">';
         //$count++;
 
@@ -914,12 +923,6 @@ class block_assessment_information_renderer extends plugin_renderer_base
         $count = 0;
         foreach ($resources as $resource) {
             $cmid=$resource->itemid;//course module id
-
-            // -- (start)
-            if($resource->mtable == 'label' && $labelactivity_status == 0){
-                continue;
-            }
-            // -- (end)
 
             $aisectionno = 999;
             $sql_sectionno = "SELECT * FROM {course_modules} WHERE course=" . $COURSE->id . " AND id = " . $cmid;
@@ -1276,14 +1279,14 @@ class block_assessment_information_renderer extends plugin_renderer_base
             if( $deletion->groupingid != 0  ){
                 if( count($userarr) > 0  && in_array($USER->id, $userarr)){
 
-                     $html =$this->renderAssign($instanceid,$currentuserroleid,$cmid,$html);
+                     $html =$this->renderAssign($instanceid,$currentuserroleid,$cmid,$html,$labelactivity_status);// --
 
                 }
             } // if count >0
 
             if($deletion->groupingid == 0  && count($userarr) == 0){
 
-               $html =$this->renderAssign($instanceid,$currentuserroleid,$cmid,$html);
+               $html =$this->renderAssign($instanceid,$currentuserroleid,$cmid,$html,$labelactivity_status); // --
             } // if count = 0
 
 
@@ -2065,14 +2068,27 @@ class block_assessment_information_renderer extends plugin_renderer_base
         $output .= html_writer::end_tag('div');
 
         if (course_ajax_enabled($course) && $course->id == $this->page->course->id) {
+
+            // The module chooser link.
             // modchooser can be added only for the current course set on the page!
             $straddeither = get_string('addresourceoractivity');
             // The module chooser link
             $modchooser = html_writer::start_tag('div', array('class' => 'mdl-right'));
             $modchooser.= html_writer::start_tag('div', array('class' => 'section-modchooser'));
             $icon = $this->output->pix_icon('t/add', '');
-            $span = html_writer::tag('span', $straddeither, array('class' => 'section-modchooser-text','id'=>'block_assess'));
-            $modchooser .= html_writer::tag('span', $icon . $span, array('class' => 'section-assessment-modchooser-link'));
+            // --
+            $span = html_writer::tag('span', $straddeither, array('class' => 'section-assessment-modchooser-link section-modchooser-text','id'=>'block_assess'));
+            // $modchooser .= html_writer::tag('span', $icon . $span, array('class' => 'section-assessment-modchooser-link section-modchooser-link'));
+            // --
+
+            $modchooser .= html_writer::tag('button', $icon . $span, [
+                    'class' => 'section-modchooser-link btn btn-link',
+                    'data-action' => 'open-chooser',
+                    'data-sectionid' => $section,
+                    'data-sectionreturnid' => $sectionreturn,
+                ]
+            );
+
             $modchooser.= html_writer::end_tag('div');
             $modchooser.= html_writer::end_tag('div');
 
