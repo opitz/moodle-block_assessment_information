@@ -267,14 +267,14 @@ class block_assessment_information extends block_base
         // -- (start)
         ## Global setting
         $config_assessment_information = get_config('block_assessment_information');
-        $global_enablelabelactivity = 0;
+        $global_enablelabelactivity = 1;
         if(isset($config_assessment_information->enablelabelactivity)){
             $global_enablelabelactivity = $config_assessment_information->enablelabelactivity;
         }
         
 
         ## Course setting
-        $labelactivity_status = 0;
+        $labelactivity_status = 1;
         if(isset($this->config->enable_labelactivity)){
             $labelactivity_status = $this->config->enable_labelactivity;
         }

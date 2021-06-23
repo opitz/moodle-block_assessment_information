@@ -132,12 +132,13 @@ class block_assessment_information_edit_form extends block_edit_form {
         $mform->disabledIf('config_extra_section_header','config_enable_extra_section',
             'notchecked');
         //configure subheadings
-        
+         
         $mform->addElement('advcheckbox','config_enable_labelactivity', get_string(
             'config_enable_labelactivity', 'block_assessment_information'
         ),get_string(
             'config_enable_labelactivity', 'block_assessment_information'
         ));
+        $mform->setDefault('config_enable_labelactivity', true);
 
         //additional roles field
         $additional_subheadings = array();

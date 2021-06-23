@@ -354,7 +354,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
     }
 
 
-   public function renderAssign($instanceid,$currentuserroleid,$cmid,$html,$labelactivity_status=0){ // --
+   public function renderAssign($instanceid,$currentuserroleid,$cmid,$html,$labelactivity_status=1){ // --
         global $DB,$COURSE,$USER,$CFG;
 
         $isDuedateVisible = $this->checkAssignmentConditions($cmid);
@@ -416,9 +416,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
             $timestamp_date = date('d-m-Y', $timestamp);
             $extensionduedate_date = date('d-m-Y', $extensionduedate);
             $date2 = date('d-m-Y H:i', $currentdate);
-            // echo "date : ".$date." , date2 : ".$date2;die;
-            // echo date("Y m d", $currentdate) .  " / " . date("Y m d", $timestamp);
-            // exit;
+            
             if($currentdate<$timestamp){
 
                 if($currentuserroleid == 5){
@@ -1358,8 +1356,8 @@ class block_assessment_information_renderer extends plugin_renderer_base
                             if( !isset($arrsubmit->state) || $arrsubmit->state == 'inprogress'){
                                 
                                 if($isDuedateVisible){
-                                $html.='<label class="due-date badge m-1" data-toggle="tooltip" title ="Overdue" id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
-                                $html.='<label class="due-date badge m-1 badge-danger '.$hidelabelclass.'" data-toggle="tooltip" title ="Overdue" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
+                                $html.='<label class="due-date badge m-1" data-toggle="tooltip" id="due_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Due '.$date.'</label>';
+                                $html.='<label class="due-date badge m-1 badge-danger '.$hidelabelclass.'" data-toggle="tooltip" title ="Late" id="late_'.$instanceid.'" style="border:1px solid #ddd;border-radius: .25rem;padding:5px">Late</label>';
                                 }
 
                             }
