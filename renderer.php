@@ -635,7 +635,7 @@ class block_assessment_information_renderer extends plugin_renderer_base
                         }
 
                         if (!empty($gradeitemid)) {
-                            if (($grade->feedback != null || $grade->finalgrade != null) && $grade->hidden != 1) {
+                            if (( (isset($grade->feedback) && $grade->feedback != null) || ( isset($grade->finalgrade) && $grade->finalgrade != null) ) && (isset($grade->hidden) && $grade->hidden != 1) ) {
 
                                 if ($isDuedateVisible) {
                                     $assignmentstatus = '<a class="due-date badge m-1 " style="border-radius: .25rem;padding:5px;margin-right:5px;text-align:center;color:black;border:1px solid #ddd;" href="' . $CFG->wwwroot . '/local/qmul_dashboard/index.php?cid=' . $COURSE->id . '">Grade and Feedback</a>';
