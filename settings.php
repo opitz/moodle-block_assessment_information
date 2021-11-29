@@ -31,6 +31,9 @@ if ($ADMIN->fulltree) {
     	new lang_string('defaultallowedcolors', 'block_assessment_information'),
     	PARAM_RAW
     ));
+
+    $settings->add(new admin_setting_configcheckbox('block_assessment_information/enablelabelactivity', get_string('config_enable_labelactivity', 'block_assessment_information'), '', 1));
+
     global $DB;
     $themes = $DB->get_records_select(
     	'course_categories',

@@ -209,13 +209,13 @@ class block_assessment_information extends block_base
         );
     }
 
-	function has_config() {
+    function has_config() {
         return true;
     }
-	/**
-	 * get_content moodle internal function that is used to get the content of a block
-	 *
-	 */
+    /**
+     * get_content moodle internal function that is used to get the content of a block
+     *
+     */
     public function get_content()
     {
         global $CFG, $COURSE, $DB;
@@ -224,17 +224,17 @@ class block_assessment_information extends block_base
         if($this->content !== NULL) {
             return $this->content;
         }
-/*
+        /*
         // $section = $DB->get_record('course_sections', array('section'=>TOPIC_ZERO_SECTION, 'course'=>$COURSE->id));
         $section = $DB->get_record('course_sections', array('section'=>TOPIC_ZERO_SECTION2, 'course'=>$COURSE->id));
         if($section && $section->visible){
             require_once($CFG->dirroot . '/course/lib.php');
             course_update_section($section->course, $section, array('visible' => 0));
         }
-*/
+        */
 
         // make sure the related section for the block stays hidden
-//        $section = $DB->get_record('course_sections', array('section'=>TOPIC_ZERO_SECTION2, 'course'=>$COURSE->id));
+        //        $section = $DB->get_record('course_sections', array('section'=>TOPIC_ZERO_SECTION2, 'course'=>$COURSE->id));
         $sql_coursesection = "
             select section
             from {course_sections}
@@ -250,25 +250,43 @@ class block_assessment_information extends block_base
         $assessment_information = new assessment_information($COURSE->id,$this->page->theme->name);
 
 
-		// CHANGE ACTIVITY ADDED IN SECTION-52 TO STEALTH STARTS HERE
+        // CHANGE ACTIVITY ADDED IN SECTION-52 TO STEALTH STARTS HERE
         $cid = $COURSE->id;
         $sequence = isset($section->sequence) ? $section->sequence:"";
-	if ($sequence!="") {
-        $sql_stealth = "UPDATE {course_modules} SET visible=1, visibleoncoursepage=0 WHERE id in (" . $sequence . ")";
+        if ($sequence!="") {
+            $sql_stealth = "UPDATE {course_modules} SET visible=1, visibleoncoursepage=0 WHERE id in (" . $sequence . ")";
 
-        $DB->execute($sql_stealth);
+            $DB->execute($sql_stealth);
 
-        rebuild_course_cache($cid);
+            rebuild_course_cache($cid);
 
-
-	}
+        }
 
         $this->content = new stdClass();
+        
+        // -- (start)
+        ## Global setting
+        $config_assessment_information = get_config('block_assessment_information');
+        $global_enablelabelactivity = 1;
+        if(isset($config_assessment_information->enablelabelactivity)){
+            $global_enablelabelactivity = $config_assessment_information->enablelabelactivity;
+        }
+        
+
+        ## Course setting
+        $labelactivity_status = 1;
+        if(isset($this->config->enable_labelactivity)){
+            $labelactivity_status = $this->config->enable_labelactivity;
+        }
+        
+        if($global_enablelabelactivity == 0){
+            $labelactivity_status = 0;
+        }
 
         $assessmentrenderer = $this->page->get_renderer('block_assessment_information');
         $assessmentrenderer->block_content($this->content, $this->instance->id, $this->config,
-            $assessment_information);
-
+            $assessment_information,$labelactivity_status);
+        // -- (end)
         // $this->content .= "<input type='text' value='23' id='txt_nextsectionid'>";
         return $this->content;
     }
