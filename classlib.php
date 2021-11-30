@@ -146,10 +146,10 @@ class assessment_information{
 	public function delete_missing_resources(){
 		$missingresources = $this->db->get_records_sql("
 			SELECT ai.id
-			FROM {block_assessment_information} as ai
-			JOIN {modules} as m
+			FROM {block_assessment_information} ai
+			JOIN {modules} m
 				ON ai.mtable = m.name
-			LEFT JOIN {course_modules} as cm
+			LEFT JOIN {course_modules} cm
 			    ON cm.module = m.id AND cm.id = ai.itemid AND cm.course = ai.courseid
 			WHERE ai.courseid = ? AND cm.id is NULL
 		", array($this->courseid));
